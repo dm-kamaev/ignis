@@ -1,6 +1,6 @@
 {
   "name": "ignis-html",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "",
   "keywords": [
     "hotwire",
@@ -17,7 +17,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dm-kamaev/ignis.git"
+    "url": "https://github.com/dm-kamaev/ignis-html.git"
   },
   "dependencies": {
     "axios": "0.24.0",

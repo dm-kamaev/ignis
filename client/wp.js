@@ -25,10 +25,10 @@ function config({ mode, devtool, watch, plugins }) {
     mode,
     devtool,
     watch,
-    entry: './index.js',
+    entry: './client/index.js',
     output: {
       path: path.resolve(__dirname, './dist'),
-      filename: 'ignis-client.js',
+      filename: 'ignis.js',
       library: {
         name: 'Ignis',
         type: 'window',

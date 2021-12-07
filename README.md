@@ -2,7 +2,7 @@
 
 In browser:
 ```js
-import Ignis from './index.js';
+import Ignis from 'ignis-html/client';
 
 
 Ignis.start({
@@ -24,7 +24,7 @@ Ignis.start({
 ```
 
 ```js
-  <script src="../client/dist/ignis-html.js"></script>
+  <script src="https://unpkg.com/ignis-html@1.0.3/client/dist/ignis.js"></script>
   <script>
     Ignis.start({
       onError(err) {

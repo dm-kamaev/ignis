@@ -221,7 +221,7 @@ function view_list_books(books, id, id_book_change) {
       <div>Total: ${books.length}</div>
       ${books.map(el => {
         return `
-          <div class="card" style=margin-top:16px data-ignis-event="mouseenter->GET->http://127.0.0.1:9002/api/book/metrica/${el.id}">
+          <div class="card" style=margin-top:16px>
             <div class="card-content">
               <div class="content">
                 <p>${el.name}</p>
