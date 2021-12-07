@@ -1,0 +1,34 @@
+{
+  "name": "ignis",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [
+    "form-serialization",
+    "form-to-json",
+    "html-to-json",
+    "json-form",
+    "form to json",
+    "formData to json",
+    "form fields to json",
+    "serializing form to json",
+    "serializing FormData to json",
+    "serializing form fields to json",
+    "formdata",
+    "formdata-to-json",
+    "form",
+    "json",
+    "base64",
+    "file to base64",
+    "convert",
+    "converter"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "dm-kamaev@rambler.ru",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dm-kamaev/ignis.git"
+  }
+}

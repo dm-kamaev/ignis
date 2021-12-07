@@ -1,0 +1,182 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+
+      <title>Document</title>
+      <style>
+        .red, .error{
+          border-color:red;
+          color: red;
+        }
+        .red:hover{
+          border-color:red;
+        }
+
+        .global-spinner {
+          position:fixed;
+          width:100%;
+          left:0;right:0;top:0;bottom:0;
+          background-color: rgba(255,255,255,0.7);
+          z-index:9999;
+          display:none;
+        }
+      </style>
+    </head>
+    <body>
+      <div class=columns style="margin:0 auto">
+        <div class="column is-one-quarter is-offset-4">
+          
+      <form
+        action="#"
+        id=book_form
+        data-ignis-form="POST->http://127.0.0.1:9002/api/book?utm_query=1"
+        data-ignis-output-id=list_books
+        class="box"
+      >
+        <div style=margin-top:16px; class=field>
+          <label for="" class=label>Author:</label>
+          <div class=control>
+            <input type="text" name=author class="input false" value="" >
+          </div>
+          <p class=error></p>
+        </div>
+
+        <div style=margin-top:16px; class=field>
+          <label for="" class=label>Name:</label>
+          <div class=control>
+            <input type="text" name=name class="input" value="" >
+          </div>
+          <p class=error></p>
+        </div>
+
+        <div style=margin-top:16px; class=field>
+          <label for="" class=label>Year:</label>
+          <div class=control>
+            <input type="number" name=year pattern="d+" min="0" class="input" value="" >
+          </div>
+          <p class=error></p>
+        </div>
+
+        <div style=margin-top:16px;display:flex; class=field>
+          <div>
+            <label class="checkbox">
+              <input type="checkbox" name=is_classic value=v1 class=checkbox  >
+              Classic
+            </label>
+          </div>
+          <div style=margin-left:8px>
+            <label class="checkbox">
+              <input type="checkbox" name=is_classic value=v2 class=checkbox  >
+              Classic 2
+            </label>
+          </div>
+        </div>
+        <p class=error></p>
+
+        <div style=margin-top:8px; class=field>
+          <label for="" class=field>Types of literature:</label>
+          <div class="control">
+            
+                <div>
+                  <label for=v1 class="radio">
+                    <input type="radio" id=v1 value="Fiction" name="type"  >
+                    Fiction
+                  </label>
+                </div>
+              
+                <div>
+                  <label for=v2 class="radio">
+                    <input type="radio" id=v2 value="Documentary prose" name="type"  >
+                    Documentary prose
+                  </label>
+                </div>
+              
+                <div>
+                  <label for=v3 class="radio">
+                    <input type="radio" id=v3 value="Memoir literature" name="type"  >
+                    Memoir literature
+                  </label>
+                </div>
+              
+                <div>
+                  <label for=v4 class="radio">
+                    <input type="radio" id=v4 value="Scientific and popular science literature" name="type"  >
+                    Scientific and popular science literature
+                  </label>
+                </div>
+              
+                <div>
+                  <label for=v5 class="radio">
+                    <input type="radio" id=v5 value="Reference literature" name="type"  >
+                    Reference literature
+                  </label>
+                </div>
+              
+                <div>
+                  <label for=v6 class="radio">
+                    <input type="radio" id=v6 value="Educational literature" name="type"  >
+                    Educational literature
+                  </label>
+                </div>
+              
+                <div>
+                  <label for=v7 class="radio">
+                    <input type="radio" id=v7 value="Technical literature" name="type"  >
+                    Technical literature
+                  </label>
+                </div>
+              
+                <div>
+                  <label for=v8 class="radio">
+                    <input type="radio" id=v8 value="Literature on psychology and self-development" name="type"  >
+                    Literature on psychology and self-development
+                  </label>
+                </div>
+              
+          </div>
+        </div>
+
+        <div style=margin-top:16px>
+          <select name="hero" class=select >
+            <option>Выберите героя</option>
+            <option value="t1" >Чебурашка</option>
+            <option value="t2" >Крокодил Гена</option>
+            <option value="t3" >Шапокляк</option>
+            <option value="t4" >Крыса Лариса</option>
+          </select>
+        </div>
+
+        <div style=margin-top:16px>
+          <input type="file" name="file" multiple class="file" >
+        </div>
+
+        <div style=margin-top:16px>
+          <button type="submit" class="button is-primary">Create</button>
+          <p class=error></p>
+        </div>
+      </form>
+  
+        </div>
+        
+    <div id=list_books class=column style=max-width:400px;margin-right:8px;margin-right:auto >
+      <div>Total: 0</div>
+      
+    </div>
+  
+      </div>
+
+      <div style=display:none; class="global-spinner">
+        <div style="margin:auto"><img src="https://risk-monitoring.ru/img/preloader_grey.gif" alt=""/></div>
+      </div>
+
+       <script src="../client/example_start.js"></script>
+      <!-- <script src="../client/dist/ignis-client.js"></script> -->
+    </body>
+  </html>
+  
