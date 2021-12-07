@@ -24,7 +24,7 @@ Ignis.start({
 ```
 
 ```js
-  <script src="../client/dist/ignis-client.js"></script>
+  <script src="../client/dist/ignis-html.js"></script>
   <script>
     Ignis.start({
       onError(err) {

@@ -1,34 +1,34 @@
 {
-  "name": "ignis",
-  "version": "1.0.0",
+  "name": "ignis-html",
+  "version": "1.0.1",
   "description": "",
   "keywords": [
-    "form-serialization",
-    "form-to-json",
-    "html-to-json",
-    "json-form",
-    "form to json",
-    "formData to json",
-    "form fields to json",
-    "serializing form to json",
-    "serializing FormData to json",
-    "serializing form fields to json",
-    "formdata",
-    "formdata-to-json",
-    "form",
-    "json",
-    "base64",
-    "file to base64",
-    "convert",
-    "converter"
+    "hotwire",
+    "turbo",
+    "browser",
+    "AJAX",
+    "HTML"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx webpack --config ./client/wp.js"
   },
   "author": "dm-kamaev@rambler.ru",
   "license": "ISC",
   "repository": {
     "type": "git",
     "url": "https://github.com/dm-kamaev/ignis.git"
+  },
+  "dependencies": {
+    "axios": "0.24.0",
+    "forms_to_json": "0.0.3",
+    "morphdom": "2.6.1"
+  },
+  "devDependencies": {
+    "@babel/core": "7.16.0",
+    "eslint": "8.3.0",
+    "eslint-plugin-unicorn": "39.0.0",
+    "webpack": "5.65.0",
+    "webpack-cli": "4.9.1"
   }
 }
