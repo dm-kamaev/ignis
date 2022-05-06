@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-import Manager_Form from './Manager_Form';
-import Manager_Event from './Manager_Event';
+import Manager_El from './Manager_El';
+import { I_life_hooks } from './I_life_hooks';
 
-function start(options = {}) {
-  const life_hooks = {
+function start(options: { onError?(err: Error | any): void; longRequest?: { start(): void; end(): void }; requestTimeout?: number} = {}) {
+  const life_hooks: I_life_hooks = {
     onError: options.onError || function(){},
     longRequest: options.longRequest || {
       start() {},
@@ -14,30 +14,35 @@ function start(options = {}) {
 
   const timeout = options.requestTimeout ?? 0;
 
-  const req = axios.create({ timeout });
+  const req = axios.create({
+    timeout,
+    // validateStatus(status) {
+    //   return status === 200 || status === 302 || status === 301;
+    // },
+  });
 
-  const manager_form = new Manager_Form(life_hooks, req).start();
-  const manager_event = new Manager_Event(life_hooks, req).start();
+  const manager_el = new Manager_El(life_hooks, req).start();
+  const ATTR_EV = 'data-i-ev';
 
   const observer = new MutationObserver(mutationRecords => {
     for (let mutation of mutationRecords) {
-      // console.log(mutation);
-      for(let node of mutation.addedNodes) {
+      for(let node of Array.from(mutation.addedNodes)) {
         // отслеживаем только узлы-элементы, другие (текстовые) пропускаем
         if (!(node instanceof HTMLElement)) { continue; }
 
         // проверить, не является ли вставленный элемент примером кода
-        if (node.matches(Manager_Form.get_selector())) {
-          manager_form.append([ node ]);
-        }
-        if (node.matches(Manager_Event.get_selector())) {
-          manager_event.append([ node ]);
+        if (node.matches(Manager_El.get_selector())) {
+          manager_el.append([ node ]);
         }
 
         // или, может быть, пример кода есть в его поддереве?
-        manager_form.append(Manager_Form.get_els(node));
-        manager_event.append(Manager_Event.get_els(node));
+        manager_el.append(Manager_El.get_els(node));
 
+      }
+      //
+      if (mutation.type === 'attributes' && mutation.attributeName === ATTR_EV) {
+        const t = mutation.target;
+        manager_el.bindings_new_cmds(t as HTMLElement);
       }
     }
   });
@@ -46,7 +51,8 @@ function start(options = {}) {
   observer.observe(document.body, {
     childList: true, // наблюдать за непосредственными детьми
     subtree: true, // и более глубокими потомками
-    // attributes: true,
+    attributes: true,
+    attributeFilter: [ATTR_EV],
   });
 }
 

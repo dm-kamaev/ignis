@@ -14,7 +14,8 @@ module.exports = function () {
   app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'origin, content-type, accept');
+    res.setHeader('Access-Control-Allow-Headers', 'origin, content-type, content-length, accept, Referer, Location, X-Ignis-Html-Request, X-Ignis-Html-Id, X-Ignis-Output-Id');
+    res.setHeader('Access-Control-Expose-Headers', 'X-Ignis-Redirect-To');
 
     next();
   });
@@ -27,6 +28,21 @@ module.exports = function () {
 
   // eslint-disable-next-line global-require
   app.use('/api/book', require('./api.js'));
+
+  app.use('/page/redirect', (_, res) => {
+    res.send(`<!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Document</title>
+    </head>
+    <body>
+      After Redirect!
+    </body>
+    </html>`)
+  });
 
 
 

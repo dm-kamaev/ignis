@@ -14,8 +14,8 @@ let books = [];
 router.post('/', async function (req, res) {
 // router.post('/', middleware_formidable(), function (req, res) {
   // console.log(req.files, req.fields);
-  const id_book_change = req.query.__self_id;
-  const id_list_books = req.query.__output_id;
+  const id_book_change = req.get('X-Ignis-Html-Id');
+  const id_list_books = req.get('X-Ignis-Output-Id');
   const { author, name, year, is_classic, type, hero } = req.body;
 
   const errors = {};
@@ -53,8 +53,9 @@ router.put('/:id', function (req, res) {
 
   const book_id = parseInt(req.params.id, 10);
   const { author, name, year, is_classic, type, hero } = req.body;
-  const id_book_change = req.query.__self_id;
-  const id_list_books = req.query.__output_id;
+  const id_book_change = req.get('X-Ignis-Html-Id');
+  const id_list_books = req.get('X-Ignis-Output-Id');
+
 
 
   let book = books[book_id];
@@ -74,7 +75,8 @@ router.put('/form/:id', async function (req, res) {
 
   const book_id = parseInt(req.params.id, 10);
   const { id_list_books } = req.body;
-  const output_id = req.query.__output_id;
+  const output_id = req.get('X-Ignis-Output-Id');
+
 
   const book = books[book_id];
 
@@ -92,12 +94,16 @@ router.get('/metrica/:id', async function (req, res) {
   res.status(200).send();
 });
 
+router.get('/redirect', async function (req, res) {
+  console.log('redirect');
+  res.setHeader('X-Ignis-Redirect-To', '/page/redirect').status(200).send();
+});
 
 
 router.delete('/:id', function (req, res) {
   console.log(req.body);
   const book_id = parseInt(req.params.id, 10);
-  const output_id = req.query.__output_id;
+  const output_id = req.get('X-Ignis-Output-Id');
 
   books = books.filter(el => el.id !== book_id);
 
@@ -115,19 +121,22 @@ function view_book_change(id, id_list_books, book, errors = {}) {
   const get_error = k => {
     return errors[k] || '';
   };
-  const use_prev_value = () => Object.keys(errors).length ? 'data-ignis-use-prev-value' : '';
+  const use_prev_value = () => Object.keys(errors).length ? 'data-i-preserve' : '';
 
 
-  // data-ignis-enctype="multipart/form-data"
+  // data-i-enctype="multipart/form-data"
+  // mouseover->GET:http://127.0.0.1:9002/api/book/metrica/2
+  // mouseover->GET:http://127.0.0.1:9002/api/book/metrica/2->debounce(1s),once
 
   // eslint-disable-next-line max-len
   const arr = ['Fiction', 'Documentary prose', 'Memoir literature', 'Scientific and popular science literature', 'Reference literature', 'Educational literature', 'Technical literature', 'Literature on psychology and self-development'];
+  // mouseover->GET:http://127.0.0.1:9002/api/book/metrica/2
   const html = `
       <form
         action="#"
         id=${id}
-        data-ignis-form="${is_create ? 'POST->http://127.0.0.1:9002/api/book?utm_query=1' : `PUT->http://127.0.0.1:9002/api/book/${book.id}`}"
-        data-ignis-output-id=${id_list_books}
+        data-i-ev="submit->${is_create ? 'POST:http://127.0.0.1:9002/api/book?utm_query=1' : `PUT:http://127.0.0.1:9002/api/book/${book.id}`}"
+        data-i-output-id=${id_list_books}
         class="box"
       >
         <div style=margin-top:16px; class=field>
@@ -218,6 +227,11 @@ function view_book_change(id, id_list_books, book, errors = {}) {
 function view_list_books(books, id, id_book_change) {
   return `
     <div id=${id} class=column style=max-width:400px;margin-right:8px;margin-right:auto >
+      <!-- <input
+        type="text"
+        data-i-ev="keyup->GET:http://127.0.0.1:9002/api/book/metrica/2->debounce(2s),changed(value)"
+      />
+      -->
       <div>Total: ${books.length}</div>
       ${books.map(el => {
         return `
@@ -236,17 +250,17 @@ function view_list_books(books, id, id_book_change) {
               <button
                 class="button is-primary card-footer-item"
                 type=submit
-                data-ignis-event="click->PUT->http://127.0.0.1:9002/api/book/form/${el.id}"
-                data-ignis-output-id=${id_book_change}
-                data-ignis-data='${JSON.stringify({ id_list_books: id })}''
+                data-i-ev="click->PUT:http://127.0.0.1:9002/api/book/form/${el.id}"
+                data-i-output-id=${id_book_change}
+                data-i-data='${JSON.stringify({ id_list_books: id })}''
               >
                 Edit
               </button>
               <button
                 class="button is-danger card-footer-item"
                 type=submit
-                data-ignis-event="click->DELETE->http://127.0.0.1:9002/api/book/${el.id}"
-                data-ignis-output-id=${id}
+                data-i-ev="click->DELETE:http://127.0.0.1:9002/api/book/${el.id}"
+                data-i-output-id=${id}
               >
                 Remove
               </button>
@@ -303,7 +317,7 @@ function view_page({ form, list }) {
       </div>
 
        <script src="../client/example_start.js"></script>
-      <!-- <script src="../client/dist/ignis-client.js"></script> -->
+      <!-- <script src="../client/dist/ignis.js"></script> -->
     </body>
   </html>
   `;

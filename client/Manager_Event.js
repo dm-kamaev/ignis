@@ -5,7 +5,7 @@ import Manager_Long_Request from './Manager_Long_Request';
 export default class Manager_Event extends Manager {
 
   static get_selector() {
-    return '[data-ignis-event]';
+    return '[data-i-ev]';
   }
 
 
@@ -35,9 +35,9 @@ export default class Manager_Event extends Manager {
     const axios = this.axios;
 
     const id = $el.id;
-    const output_id = $el.getAttribute('data-ignis-output-id');
+    const output_id = $el.getAttribute('data-i-output-id');
 
-    let [_, method, url ] = $el.getAttribute('data-ignis-event').split('->');
+    let [_, method, url ] = $el.getAttribute('data-i-ev').split('->');
 
     if (!['GET', 'POST', 'PUT','DELETE'].includes(method)) {
       throw new Error('Not valid method ' + method);
@@ -46,7 +46,7 @@ export default class Manager_Event extends Manager {
 
     url = this.add_special_params(url, { id, output_id });
     let req;
-    const str_data = $el.getAttribute('data-ignis-data');
+    const str_data = $el.getAttribute('data-i-data');
     const json = str_data ? JSON.parse(str_data) : {};
     if (method === 'GET' || method === 'DELETE') {
       console.log(json, method, url);
@@ -58,7 +58,7 @@ export default class Manager_Event extends Manager {
 
     const manager_long_request = new Manager_Long_Request(this.life_hooks.longRequest).start();
 
-    req.then(this.handle_response.bind(this)).catch(this.handler_error.bind(this)).finally(manager_long_request.end.bind(manager_long_request));;
+    req.then(this.handle_response.bind(this)).catch(this.handler_error.bind(this)).finally(manager_long_request.end.bind(manager_long_request));
   }
 
   _subscribe($el) {
@@ -66,7 +66,7 @@ export default class Manager_Event extends Manager {
       this._cb(e, $el);
     };
 
-    const event_name = $el.getAttribute('data-ignis-event').split('->')[0];
+    const event_name = $el.getAttribute('data-i-ev').split('->')[0];
     $el.addEventListener(event_name, cb);
   }
 

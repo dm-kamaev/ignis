@@ -35,8 +35,8 @@
       <form
         action="#"
         id=book_form
-        data-ignis-form="POST->http://127.0.0.1:9002/api/book?utm_query=1"
-        data-ignis-output-id=list_books
+        data-i-ev="submit->POST:http://127.0.0.1:9002/api/book?utm_query=1"
+        data-i-output-id=list_books
         class="box"
       >
         <div style=margin-top:16px; class=field>
@@ -165,6 +165,11 @@
         </div>
         
     <div id=list_books class=column style=max-width:400px;margin-right:8px;margin-right:auto >
+      <!-- <input
+        type="text"
+        data-i-ev="keyup->GET:http://127.0.0.1:9002/api/book/metrica/2->debounce(2s),changed(value)"
+      />
+      -->
       <div>Total: 0</div>
       
     </div>
@@ -176,7 +181,7 @@
       </div>
 
        <script src="../client/example_start.js"></script>
-      <!-- <script src="../client/dist/ignis-client.js"></script> -->
+      <!-- <script src="../client/dist/ignis.js"></script> -->
     </body>
   </html>
   

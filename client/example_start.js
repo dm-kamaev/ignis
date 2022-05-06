@@ -1,4 +1,4 @@
-import Ignis from './index.js';
+import Ignis from './ignis';
 
 
 Ignis.start({
