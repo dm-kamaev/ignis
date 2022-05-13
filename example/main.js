@@ -4,6 +4,7 @@ const express = require('express');
 require('express-async-errors');
 
 const body_parser = require('body-parser');
+const path = require('path');
 
 module.exports = function () {
   const app = express();
@@ -14,8 +15,8 @@ module.exports = function () {
   app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'origin, content-type, content-length, accept, Referer, Location, X-Ignis-Html-Request, X-Ignis-Html-Id, X-Ignis-Output-Id');
-    res.setHeader('Access-Control-Expose-Headers', 'X-Ignis-Redirect-To');
+    res.setHeader('Access-Control-Allow-Headers', 'origin, content-type, content-length, accept, Referer, Location, X-Ignis-Request, X-Ignis-Id, X-Ignis-Output-Id, X-Ignis-Request-Id');
+    res.setHeader('Access-Control-Expose-Headers', 'X-Ignis-Request-Id, X-Ignis-Redirect-To');
 
     next();
   });
@@ -25,9 +26,11 @@ module.exports = function () {
 
   // ------ END ------
 
+  app.use('/stat', express.static(path.join(__dirname, '../client')));
 
   // eslint-disable-next-line global-require
   app.use('/api/book', require('./api.js'));
+  app.use('/page', require('./page.js'));
 
   app.use('/page/redirect', (_, res) => {
     res.send(`<!DOCTYPE html>

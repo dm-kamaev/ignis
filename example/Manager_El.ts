@@ -1,12 +1,13 @@
 import {Axios} from 'axios';
 import FormToJSON from 'forms_to_json';
-import Manager from './Manager';
-import Manager_Long_Request from './Manager_Long_Request';
-import { I_life_hooks } from './I_life_hooks';
+import Manager from '../client/Manager';
+import Manager_Long_Request from '../client/Manager_Long_Request';
+import { I_life_hooks } from '../client/I_life_hooks';
+import { getTarget } from '../client/helper';
 
 
 export default class Manager_El extends Manager {
-  private axios: Axios;
+  private _axios: Axios;
 
   static get_selector() {
     return '[data-i-ev]';
@@ -17,8 +18,8 @@ export default class Manager_El extends Manager {
   }
 
   constructor(life_hooks: I_life_hooks, axios: Axios) {
-    super(life_hooks);
-    this.axios = axios;
+    super(life_hooks, axios);
+    this._axios = axios;
   }
 
   start() {
@@ -31,7 +32,7 @@ export default class Manager_El extends Manager {
   _cb_form(e: Event, $el: HTMLElement, cmd: { method: string; url: string }) {
     e.preventDefault();
 
-    const axios = this.axios;
+    const axios = this._axios;
 
     const id = $el.id;
     const output_id = $el.getAttribute('data-i-output-id');
@@ -47,14 +48,11 @@ export default class Manager_El extends Manager {
       throw new Error('Not valid method ' + method);
     }
 
-    const $form: HTMLFormElement = this.get_target(e);
+    const $form: HTMLFormElement = getTarget(e);
     let req;
     const method_name = method.toLowerCase();
-    const headers = {
-      'X-Ignis-Html-Request': 'true',
-      'X-Ignis-Html-Id': id,
-      'X-Ignis-Output-Id': output_id,
-    };
+    const headers = this._build_headers({ id, output_id });
+
     if (method === 'GET' || method === 'DELETE') {
       // TODO: encode query params
       const json = new FormToJSON($form).parse();
@@ -81,7 +79,7 @@ export default class Manager_El extends Manager {
   _cb_el(e: Event, $el: HTMLElement, cmd: { method: string; url: string }) {
     e.preventDefault();
 
-    const axios = this.axios;
+    const axios = this._axios;
 
     const id = $el.id;
     const output_id = $el.getAttribute('data-i-output-id');
@@ -95,15 +93,11 @@ export default class Manager_El extends Manager {
     }
 
     const method_name = method.toLowerCase();
-    const headers = {
-      'X-Ignis-Html-Request': 'true',
-      'X-Ignis-Html-Id': id,
-      'X-Ignis-Output-Id': output_id,
-    };
+    const headers = this._build_headers({ id, output_id });
 
     let req;
-    const str_data = $el.getAttribute('data-i-data');
-    const json = str_data ? JSON.parse(str_data) : {};
+    // const json = str_data ? JSON.parse(str_data) : {};
+    const json = this._extract_data($el);
     if (method === 'GET' || method === 'DELETE') {
       console.log(json, method, url);
       url = this.form_add_to_url(url, json);
@@ -117,6 +111,29 @@ export default class Manager_El extends Manager {
     req.then(this.handle_response.bind(this)).catch(this.handler_error.bind(this)).finally(manager_long_request.end.bind(manager_long_request));
   }
 
+  private _extract_data($el: HTMLElement) {
+    const str_data = $el.getAttribute('data-i-info');
+    if (!str_data) {
+      return {};
+    }
+    if (str_data.startsWith('js:')) {
+      let [_, expr] = str_data.split('js:');
+      const code = `with(this){${`return ${expr}`}}`;
+      const fn = new Function(code).bind($el);
+      console.log('RESULT', fn());
+      return fn();
+    } else {
+      return JSON.parse(str_data);
+    }
+  }
+
+  private _build_headers({id, output_id }:{ id: string, output_id: string | null }) {
+    return {
+      'X-Ignis-Request': 'true',
+      'X-Ignis-Id': id,
+      'X-Ignis-Output-Id': output_id,
+    };
+  }
 
 }
 

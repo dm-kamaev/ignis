@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-import Manager_El from './Manager_El';
-import { I_life_hooks } from './I_life_hooks';
+import Manager from './Manager';
+import enum_attr from './enum_attr';
+import { I_life_hooks } from './interface';
 
 function start(options: { onError?(err: Error | any): void; longRequest?: { start(): void; end(): void }; requestTimeout?: number} = {}) {
   const life_hooks: I_life_hooks = {
@@ -21,8 +22,7 @@ function start(options: { onError?(err: Error | any): void; longRequest?: { star
     // },
   });
 
-  const manager_el = new Manager_El(life_hooks, req).start();
-  const ATTR_EV = 'data-i-ev';
+  const manager = new Manager(life_hooks, req).start();
 
   const observer = new MutationObserver(mutationRecords => {
     for (let mutation of mutationRecords) {
@@ -31,18 +31,18 @@ function start(options: { onError?(err: Error | any): void; longRequest?: { star
         if (!(node instanceof HTMLElement)) { continue; }
 
         // проверить, не является ли вставленный элемент примером кода
-        if (node.matches(Manager_El.get_selector())) {
-          manager_el.append([ node ]);
+        if (node.matches(Manager.get_selector())) {
+          manager.append([ node ]);
         }
 
         // или, может быть, пример кода есть в его поддереве?
-        manager_el.append(Manager_El.get_els(node));
+        manager.append(Manager.get_els(node));
 
       }
       //
-      if (mutation.type === 'attributes' && mutation.attributeName === ATTR_EV) {
+      if (mutation.type === 'attributes' && mutation.attributeName === enum_attr.EV) {
         const t = mutation.target;
-        manager_el.bindings_new_cmds(t as HTMLElement);
+        manager.bindings_new_cmds(t as HTMLElement);
       }
     }
   });
@@ -52,7 +52,7 @@ function start(options: { onError?(err: Error | any): void; longRequest?: { star
     childList: true, // наблюдать за непосредственными детьми
     subtree: true, // и более глубокими потомками
     attributes: true,
-    attributeFilter: [ATTR_EV],
+    attributeFilter: [enum_attr.EV],
   });
 }
 

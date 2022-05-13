@@ -19,3 +19,22 @@ export function addCss(code: string, file_url?: string) {
     H.appendChild(link);
   }
 }
+
+export function getTarget(e) { return e && e.target || e.srcElement; }
+
+
+export const get_uid = (function () {
+  var IDX = 36, HEX = '';
+  while (IDX--) {
+    HEX += IDX.toString(36);
+  }
+
+  return function (len?: number) {
+    var str = '';
+    var num = len || 11;
+    while (num--) {
+      str += HEX[Math.random() * 36 | 0];
+    }
+    return str;
+  };
+}());

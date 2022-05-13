@@ -46,7 +46,7 @@ export default class Manager_Event extends Manager {
 
     url = this.add_special_params(url, { id, output_id });
     let req;
-    const str_data = $el.getAttribute('data-i-data');
+    const str_data = $el.getAttribute('data-i-info');
     const json = str_data ? JSON.parse(str_data) : {};
     if (method === 'GET' || method === 'DELETE') {
       console.log(json, method, url);

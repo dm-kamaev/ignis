@@ -1,6 +1,14 @@
+import { I_life_hooks } from './interface';
 
 export default class Manager_Long_Request {
-  constructor(longRequest) {
+  private _longRequest: I_life_hooks['longRequest'];
+  private _is_finished: boolean;
+  private _is_long_request: boolean;
+  private _delay: number;
+  private _min_diff_between_start_stop: number;
+  private _start_request: number;
+
+  constructor(longRequest: I_life_hooks['longRequest']) {
     this._longRequest = longRequest;
     this._is_finished = false;
     this._is_long_request = false;
