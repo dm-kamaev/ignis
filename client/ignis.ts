@@ -4,12 +4,12 @@ import Manager from './Manager';
 import enum_attr from './enum_attr';
 import { I_life_hooks } from './interface';
 
-function start(options: { onError?(err: Error | any): void; longRequest?: { start(): void; end(): void }; requestTimeout?: number} = {}) {
+function start(options: { onError?(err: Error | any): void; longRequest?: I_life_hooks['longRequest']; requestTimeout?: number} = {}) {
   const life_hooks: I_life_hooks = {
     onError: options.onError || function(){},
     longRequest: options.longRequest || {
       start() {},
-      end() {}
+      stop() {}
     },
   };
 

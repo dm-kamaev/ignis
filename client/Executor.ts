@@ -1,4 +1,4 @@
-import { Axios, AxiosError, AxiosResponse } from 'axios';
+import { Axios, AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 import FormToJSON from 'forms_to_json';
 import morphdom from 'morphdom';
 
@@ -10,6 +10,14 @@ import enum_attr from './enum_attr';
 import El from './El';
 
 type T_cmd = { name: string; method: string; url: string };
+
+// set state for current page
+history.replaceState({ v: 'ignis-html:1', url: document.location.href }, '', document.location.href);
+window.addEventListener('popstate', function(ev) {
+  if (ev.state.v === 'ignis-html:1' && ev.state.url) {
+    window.location.href = ev.state.url;
+  }
+});
 
 export default class Executor {
   private axios: Axios;
@@ -69,9 +77,7 @@ export default class Executor {
       }
     }
 
-    const manager_long_request = spinner ? new Manager_Long_Request(this.life_hooks.longRequest).start() : { end: () => { } };
-
-    req.then(this._handle_response.bind(this)).catch(this._handler_error.bind(this)).finally(manager_long_request.end.bind(manager_long_request));
+    this._make_request(req, $el, spinner, url);
   }
 
   run_as_el(e: Event, cmd: T_cmd, settings: { spinner: boolean }) {
@@ -92,6 +98,7 @@ export default class Executor {
 
     const method = cmd.method;
     let url = cmd.url;
+    const origin_url = cmd.url;
 
 
     if (!['GET', 'POST', 'PUT','DELETE'].includes(method)) {
@@ -111,12 +118,10 @@ export default class Executor {
       req = axios[method_name](url, json, { headers });
     }
 
-    const manager_long_request = spinner ? new Manager_Long_Request(this.life_hooks.longRequest).start() : { end: () => {} };
-
-    req.then(this._handle_response.bind(this)).catch(this._handler_error.bind(this)).finally(manager_long_request.end.bind(manager_long_request));
+    this._make_request(req, $el, spinner, url);
   }
 
-  private _extract_data($el: HTMLElement, name: string) {
+  private _extract_data($el: HTMLElement, name: string): Record<string, any> {
     const obj = $el.hasAttribute(`data-i-info-${name}-js`) ? { attr: `data-i-info-${name}-js`, js: true } :
       $el.hasAttribute(`data-i-info-${name}`) ? { attr: `data-i-info-${name}`, js: false } :
       $el.hasAttribute('data-i-info-js') ? { attr: 'data-i-info-js', js: true } :
@@ -125,7 +130,6 @@ export default class Executor {
       const expr = $el.getAttribute(obj.attr);
       const code = `with(this){${`return ${expr}`}}`;
       const fn = new Function(code).bind($el);
-      console.log('RESULT', fn());
       return fn();
     } else {
       const str_data = $el.getAttribute(obj.attr);
@@ -136,9 +140,16 @@ export default class Executor {
     }
   }
 
-  private _handle_response(resp: AxiosResponse) {
+  private _make_request(req: Promise<AxiosResponse>, $el: HTMLElement, spinner: boolean, url: string) {
+    const manager_long_request = spinner ? new Manager_Long_Request(this.life_hooks.longRequest, $el).start() : { end: () => {} };
+
+    req.then((resp: AxiosResponse) => this._handle_response(resp, url)).catch(this._handler_error.bind(this)).finally(manager_long_request.end.bind(manager_long_request));
+  }
+
+  private _handle_response(resp: AxiosResponse, url: string) {
     const { config: _, headers, data } = resp;
     const status = resp.status;
+
     // const url_obj = new URL(config.url as string);
     // const url = url_obj.origin + url_obj.pathname;
 
@@ -160,6 +171,11 @@ export default class Executor {
       this._apply_response({ ev: 'update', data: { html, css: undefined } });
     } else if (headers['x-ignis-redirect-to']) {
       window.location.href = headers['x-ignis-redirect-to'];
+    }
+
+    // push url if has attribute
+    if (this.el.$el.hasAttribute('data-i-push-url')) {
+      history.pushState({ v:'ignis-html:1', url }, '', url);
     }
   }
 

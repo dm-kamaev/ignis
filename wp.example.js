@@ -5,7 +5,7 @@ module.exports = {
   devtool: 'inline-source-map',
   watch: true,
   entry: {
-    main: './client/example_start.js',
+    main: './client/example_start.ts',
   },
   output: {
     path: path.resolve(__dirname, './client/dist'),

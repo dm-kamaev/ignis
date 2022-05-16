@@ -179,7 +179,6 @@ class Every {
         break;
       case 's':
         this._delay = number * 1000;
-        console.log('SEC', number, this._delay);
         break;
       case 'm':
         this._delay = number * 1000 * 60;
