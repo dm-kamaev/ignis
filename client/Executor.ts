@@ -1,10 +1,11 @@
-import { Axios, AxiosError, AxiosInstance, AxiosResponse } from 'axios';
+import { Axios, AxiosError, AxiosResponse } from 'axios';
 import FormToJSON from 'forms_to_json';
 import morphdom from 'morphdom';
 
 import { getById, addCss, getTarget } from './helper';
 
 import Manager_Long_Request from './Manager_Long_Request';
+import Animation from './Animation';
 import { I_life_hooks } from './interface';
 import enum_attr from './enum_attr';
 import El from './El';
@@ -14,10 +15,12 @@ type T_cmd = { name: string; method: string; url: string };
 // set state for current page
 history.replaceState({ v: 'ignis-html:1', url: document.location.href }, '', document.location.href);
 window.addEventListener('popstate', function(ev) {
-  if (ev.state.v === 'ignis-html:1' && ev.state.url) {
+  if (ev.state && ev.state.v === 'ignis-html:1' && ev.state.url) {
     window.location.href = ev.state.url;
   }
 });
+
+const animation = new Animation();
 
 export default class Executor {
   private axios: Axios;
@@ -37,13 +40,16 @@ export default class Executor {
   run_as_form(e: Event, cmd: { method: string; url: string }, { spinner }: { spinner: boolean }) {
     e.preventDefault();
 
+    const $form: HTMLFormElement = getTarget(e);
+
     const axios = this.axios;
     const $el = this.$el;
 
     const id = $el.id;
     const output_id = $el.getAttribute('data-i-output-id');
     let url = cmd.url;
-    const enctype = $el.getAttribute('data-i-enctype')?.trim();
+    const origin_url = cmd.url;
+    const enctype = $el.getAttribute('enctype')?.trim() || $el.getAttribute('data-i-enctype')?.trim();
     const method = cmd.method;
 
     if (!output_id) {
@@ -54,13 +60,11 @@ export default class Executor {
       throw new Error('Not valid method ' + method);
     }
 
-    const $form: HTMLFormElement = getTarget(e);
     let req;
     const method_name = method.toLowerCase();
     const headers = this._build_headers({ id, output_id, request_id: this.el.set_request_id(), });
 
     if (method === 'GET' || method === 'DELETE') {
-      // TODO: encode query params
       const json = new FormToJSON($form).parse();
       console.log(json, method, url);
       url = this._form_add_to_url(url, json);
@@ -77,7 +81,7 @@ export default class Executor {
       }
     }
 
-    this._make_request(req, $el, spinner, url);
+    this._make_request(req, $el, spinner, origin_url);
   }
 
   run_as_el(e: Event, cmd: T_cmd, settings: { spinner: boolean }) {
@@ -100,7 +104,6 @@ export default class Executor {
     let url = cmd.url;
     const origin_url = cmd.url;
 
-
     if (!['GET', 'POST', 'PUT','DELETE'].includes(method)) {
       throw new Error('Not valid method ' + method);
     }
@@ -118,7 +121,7 @@ export default class Executor {
       req = axios[method_name](url, json, { headers });
     }
 
-    this._make_request(req, $el, spinner, url);
+    this._make_request(req, $el, spinner, origin_url);
   }
 
   private _extract_data($el: HTMLElement, name: string): Record<string, any> {
@@ -142,8 +145,14 @@ export default class Executor {
 
   private _make_request(req: Promise<AxiosResponse>, $el: HTMLElement, spinner: boolean, url: string) {
     const manager_long_request = spinner ? new Manager_Long_Request(this.life_hooks.longRequest, $el).start() : { end: () => {} };
-
-    req.then((resp: AxiosResponse) => this._handle_response(resp, url)).catch(this._handler_error.bind(this)).finally(manager_long_request.end.bind(manager_long_request));
+    req.then((resp: AxiosResponse) => this._handle_response(resp, url)).catch(this._handler_error.bind(this)).finally(() => {
+      manager_long_request.end();
+      document.body.dispatchEvent(new Event('ignis-html:garbage_collector', {
+        bubbles: true,
+        cancelable: true,
+        composed: false
+      }));
+    });
   }
 
   private _handle_response(resp: AxiosResponse, url: string) {
@@ -161,7 +170,7 @@ export default class Executor {
     // Abort polling
     // https://en.wikipedia.org/wiki/86_(term)
     if (status === 286) {
-      return this.el.abort_every();
+      return this.el.revoke_cmd('@every');
     }
 
     if (data instanceof Array) {
@@ -195,7 +204,7 @@ export default class Executor {
       if (!$el) {
         throw new Error('[@ignis-web/html]: Not found element with id "#' + resp.data.id+'" for "remove"');
       }
-      $el.outerHTML = '';
+      animation.on_remove($el, () => $el.outerHTML = '');
     } else if (resp.ev === 'append_to_top') {
       const { id, html, css } = resp.data;
       this._apply_css(css);
@@ -274,7 +283,6 @@ export default class Executor {
 
 
 
-
 const options_for_render = {
   onBeforeElUpdated: function (fromEl, toEl) {
     if (toEl.tagName === 'INPUT') {
@@ -290,5 +298,11 @@ const options_for_render = {
       toEl.value = fromEl.value;
     }
     return true;
-  }
+  },
+  onElUpdated($el: HTMLElement) {
+    animation.on_update($el);
+  },
 };
+
+
+

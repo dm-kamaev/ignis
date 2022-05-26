@@ -11,15 +11,51 @@ const router = express.Router();
 module.exports = router;
 
 const db_books = require('./db_books.js')
-const books = db_books.get_all();
 
 
 router.post('/', async function (req, res) {
-// router.post('/', middleware_formidable(), function (req, res) {
-  // console.log(req.files, req.fields);
   const id_book_change = req.get('X-Ignis-Id');
   const id_list_books = req.get('X-Ignis-Output-Id');
   const { author, name, year, is_classic, type, hero } = req.body;
+  console.log('HERE', req.body);
+  const errors = {};
+  if (!author) {
+    errors.author = 'Автор не указан';
+  }
+
+  if (!is_classic) {
+    errors.is_classic = 'Не выбран не один checkbox';
+  }
+  console.log(errors);
+  // await timeout(450);
+  // await timeout(3000);
+
+  let result = [];
+  if (Object.keys(errors).length) {
+    result = [
+      commands.Update(
+        view_book_change(id_book_change, id_list_books, null, errors)
+      )
+    ];
+  } else {
+    const books = db_books.get_all();
+    db_books.create({ id: books.length, author, name, year, is_classic, type, hero });
+    result = [
+      commands.Update(view_book_change(id_book_change, id_list_books)),
+      // commands.Update({ ...view_book_change(id_book_change, id_list_books),  }), // Another variant
+      // commands.Update(view_list_books(books, id_list_books, id_book_change)),
+      // commands.AppendToEnd({ html: view_book({ id: books.length - 1, el: books[books.length - 1], id_list_books, id_book_change }), id: id_list_books}) // Another variant
+      commands.AppendToTop({ html: view_book({ id: books.length - 1, el: books[books.length - 1], id_list_books, id_book_change }), id: id_list_books }) // Another variant
+    ];
+  }
+  res.status(200).send(result);
+});
+
+router.post('/via_formdata', middleware_formidable(), function (req, res) {
+  const id_book_change = req.get('X-Ignis-Id');
+  const id_list_books = req.get('X-Ignis-Output-Id');
+  const { author, name, year, is_classic, type, hero } = req.fields;
+  console.log(req.files);
 
   const errors = {};
   if (!author) {
@@ -41,13 +77,53 @@ router.post('/', async function (req, res) {
       )
     ];
   } else {
-    books.push({ id: books.length, author, name, year, is_classic, type, hero });
+    const books = db_books.get_all();
+    db_books.create({ id: books.length, author, name, year, is_classic, type, hero });
     result = [
       commands.Update(view_book_change(id_book_change, id_list_books)),
       // commands.Update({ ...view_book_change(id_book_change, id_list_books),  }), // Another variant
-      commands.Update(view_list_books(books, id_list_books, id_book_change)),
+      // commands.Update(view_list_books(books, id_list_books, id_book_change)),
       // commands.AppendToEnd({ html: view_book({ id: books.length - 1, el: books[books.length - 1], id_list_books, id_book_change }), id: id_list_books}) // Another variant
-      // commands.AppendToTop({ html: view_book({ id: books.length - 1, el: books[books.length - 1], id_list_books, id_book_change }), id: id_list_books }) // Another variant
+      commands.AppendToTop({ html: view_book({ id: books.length - 1, el: books[books.length - 1], id_list_books, id_book_change }), id: id_list_books }) // Another variant
+    ];
+  }
+  res.status(200).send(result);
+});
+
+
+router.get('/via_urlencode', function (req, res) {
+  const id_book_change = req.get('X-Ignis-Id');
+  const id_list_books = req.get('X-Ignis-Output-Id');
+  const { author, name, year, is_classic, type, hero } = req.query;
+
+  const errors = {};
+  if (!author) {
+    errors.author = 'Автор не указан';
+  }
+
+  if (!is_classic) {
+    errors.is_classic = 'Не выбран не один checkbox';
+  }
+
+  // await timeout(450);
+  // await timeout(3000);
+
+  let result = [];
+  if (Object.keys(errors).length) {
+    result = [
+      commands.Update(
+        view_book_change(id_book_change, id_list_books, null, errors)
+      )
+    ];
+  } else {
+    const books = db_books.get_all();
+    db_books.create({ id: books.length, author, name, year, is_classic, type, hero });
+    result = [
+      commands.Update(view_book_change(id_book_change, id_list_books)),
+      // commands.Update({ ...view_book_change(id_book_change, id_list_books),  }), // Another variant
+      // commands.Update(view_list_books(books, id_list_books, id_book_change)),
+      // commands.AppendToEnd({ html: view_book({ id: books.length - 1, el: books[books.length - 1], id_list_books, id_book_change }), id: id_list_books}) // Another variant
+      commands.AppendToTop({ html: view_book({ id: books.length - 1, el: books[books.length - 1], id_list_books, id_book_change }), id: id_list_books }) // Another variant
     ];
   }
   res.status(200).send(result);
@@ -61,15 +137,15 @@ router.put('/:id', function (req, res) {
   const id_book_change = req.get('X-Ignis-Id');
   const id_list_books = req.get('X-Ignis-Output-Id');
 
-  const book = books[book_id];
-  books[book_id] = {
+  const book = db_books.get_all()[book_id];
+  db_books.update(book_id, {
     id: book.id,
     author, name, year, is_classic, type, hero
-  };
+  });
 
   res.status(200).send([
     commands.Update(view_book_change(id_book_change, id_list_books)),
-    commands.Update(view_list_books(books, id_list_books, id_book_change))
+    commands.Update(view_list_books(db_books.get_all(), id_list_books, id_book_change))
   ]);
 });
 
@@ -81,7 +157,7 @@ router.put('/form/:id', async function (req, res) {
   const output_id = req.get('X-Ignis-Output-Id');
 
 
-  const book = books[book_id];
+  const book = db_books.get_all()[book_id];
 
   // await timeout(450);
   // await timeout(3000);
@@ -117,11 +193,14 @@ router.delete('/:id', function (req, res) {
 let counter = 0;
 router.get('/poll', async function (req, res) {
   const id = req.get('X-Ignis-Id');
+  // Variant 1
   if (++counter > 5) {
     res.status(286).send();
   } else {
     res.status(200).send(view_tick(id, counter));
   }
+  // Variant 2
+  // res.status(200).send(view_tick(id, ++counter));
 });
 
 

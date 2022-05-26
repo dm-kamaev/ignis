@@ -5,6 +5,7 @@
 
 exports.view_tick = function view_tick(id, counter) {
   // ${counter < 10 ? 'data-i-ev="@every(5s)->GET:http://127.0.0.1:9002/api/book/poll"' : ''}
+  // data-i-ev="@every(3s)->GET:http://127.0.0.1:9002/api/book/poll"
   return `
     <div
       id=${id}
@@ -31,9 +32,13 @@ exports.view_book_change = function view_book_change(id, id_list_books, book, er
   const use_prev_value = () => Object.keys(errors).length ? 'data-i-preserve' : '';
 
 
-  // data-i-enctype="multipart/form-data"
+  // enctype="multipart/form-data" || data-i-enctype="multipart/form-data"
   // mouseover->GET:http://127.0.0.1:9002/api/book/metrica/2
   // mouseover->GET:http://127.0.0.1:9002/api/book/metrica/2->debounce(1s),once
+  // @keydown(enter, submit)
+  // @keyup(enter, submit)
+  // @keydown(enter)->GET:http://127.0.0.1:9002/api/book/metrica/2
+  // @keyup(enter) -> GET: http://127.0.0.1:9002/api/book/metrica/2
 
   // eslint-disable-next-line max-len
   const arr = ['Fiction', 'Documentary prose', 'Memoir literature', 'Scientific and popular science literature', 'Reference literature', 'Educational literature', 'Technical literature', 'Literature on psychology and self-development'];
@@ -126,7 +131,7 @@ exports.view_book_change = function view_book_change(id, id_list_books, book, er
 
   return {
     html,
-    css: '.test-css-book-change{ font-size: 16px;}'
+    css: `.test-css-book-change{ font-size: 16px;}`
   };
 }
 
@@ -151,8 +156,12 @@ exports.view_list_books = function view_list_books(books, id, id_book_change) {
 }
 
 exports.view_book = function view_book({ id, el, id_list_books, id_book_change }) {
+  // data-i-animation-class-on-update="fade-in"
+  // data-i-animation-class-on-update="fade-in:delay(0.5s)" // delay is optional, default 100ms
+  // data-i-animation-class-on-remove="fade-out:delay(3s)" // delay >= duration of animation
+  // data-i-animation-class-on-update="fade-in" data-i-animation-class-on-remove="fade-out:delay(3s)"
   return `
-    <div id=${id} class="card" style=margin-top:16px>
+    <div id=${id} class="card fade-in" style=margin-top:16px>
       <div class="card-content">
         <div class="content">
           <p>${el.name}</p>
@@ -166,7 +175,7 @@ exports.view_book = function view_book({ id, el, id_list_books, id_book_change }
       <footer class="card-footer">
         <button
           class="button is-primary card-footer-item"
-          type=submit
+          type=button
           data-i-ev="click->PUT:http://127.0.0.1:9002/api/book/form/${el.id}"
           data-i-output-id=${id_book_change}
           data-i-info='${JSON.stringify({ id_list_books })}'
@@ -175,7 +184,7 @@ exports.view_book = function view_book({ id, el, id_list_books, id_book_change }
         </button>
         <button
           class="button is-danger card-footer-item"
-          type=submit
+          type=button
           data-i-ev="click->DELETE:http://127.0.0.1:9002/api/book/${el.id}"
           data-i-output-id=${id}
         >
@@ -216,6 +225,33 @@ exports.view_page = function view_page({ form, list }) {
           z-index:9999;
           display:none;
         }
+
+        .fade-in {
+          animation: fade_in ease 2s;
+          -webkit-animation: fade_in ease 2s;
+          -moz-animation: fade_in ease 2s;
+          -o-animation: fade_in ease 2s;
+          -ms-animation: fade_in ease 2s;
+        }
+
+        @keyframes fade_in {
+          0% {opacity:0;}
+          100% {opacity:1;}
+        }
+
+        .fade-out {
+          animation: fade_out ease 2s;
+          -webkit-animation: fade_out ease 2s;
+          -moz-animation: fade_out ease 2s;
+          -o-animation: fade_out ease 2s;
+          -ms-animation: fade_out ease 2s;
+        }
+
+        @keyframes fade_out {
+          0% {opacity:1;}
+          100% {opacity:0;}
+        }
+
       </style>
     </head>
     <body>

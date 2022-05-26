@@ -1,9 +1,20 @@
 const path = require('path');
 
-module.exports = {
+let params = {
   mode: 'development',
   devtool: 'inline-source-map',
   watch: true,
+};
+if (process.env.NODE_ENV === 'prod' || process.env.NODE_ENV === 'production') {
+  params = {
+    mode: 'production',
+    devtool: false,
+    watch: false,
+  };
+}
+
+module.exports = {
+  ...params,
   entry: {
     main: './client/ignis.ts',
   },

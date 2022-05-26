@@ -7,7 +7,11 @@ export default class El {
   private _old_val: any = null;
   private _idle_for_every: NodeJS.Timeout | null = null;
   private _request_id: string;
-  constructor(public $el: HTMLElement, public cmds: T_cmd[]) {
+  private _cmds: Record<string, T_cmd & { unsubscribe?: () => void }> = {};
+  constructor(public $el: HTMLElement, cmds: T_cmd[]) {
+    cmds.forEach(el => {
+      this._cmds[el.name] = el;
+    });
   }
 
   set_debounce_cb(cb: (...any) => any, mod_debounce: InstanceType<typeof Debounce>) {
@@ -45,7 +49,30 @@ export default class El {
     return result;
   }
 
-  revoke_cmd(name: string) {
-    this.cmds = this.cmds.filter(el => el.name !== name);
+  assign_cmd(cmd: T_cmd) {
+    this._cmds[cmd.name] = cmd;
   }
+
+  set_unsubscribe(name: string, unsubscribe: () => void) {
+    this._cmds[name].unsubscribe = unsubscribe;
+  }
+
+  get_cmds() {
+    return this._cmds;
+  }
+
+  revoke_cmd(name: string) {
+    console.log('[revoke cmd]: before', Object.keys(this._cmds).length);
+    this._cmds[name]?.unsubscribe?.();
+    if (name === '@every') {
+      this.abort_every();
+    }
+    const names = Object.keys(this._cmds).filter(n => n !== name);
+    const filtered: El['_cmds'] = {};
+    names.forEach(name => filtered[name] = this._cmds[name]);
+    this._cmds = filtered;
+    // this.cmds = this.cmds.filter(el => el.name !== name);
+    console.log('[revoke cmd]: after', Object.keys(this._cmds).length);
+  }
+
 }

@@ -22,6 +22,16 @@ export function addCss(code: string, file_url?: string) {
 
 export function getTarget(e) { return e && e.target || e.srcElement; }
 
+export function debounce(cb: (...arg: any) => any, ms: number) {
+  let idTime: NodeJS.Timer | null = null;
+  return function () {
+    if (idTime) {
+      clearTimeout(idTime);
+    }
+    idTime = setTimeout(cb, ms);
+  };
+}
+
 
 export const get_uid = (function () {
   var IDX = 36, HEX = '';
@@ -38,3 +48,24 @@ export const get_uid = (function () {
     return str;
   };
 }());
+
+
+export function parser_delay(input_number: string, input_measure: string, el: string) {
+  const number = parseFloat(input_number.trim());
+  const measure = input_measure.trim() as 'ms' | 's' | 'm';
+  let delay: number;
+  switch (measure) {
+    case 'ms':
+      delay = number;
+      break;
+    case 's':
+      delay = number * 1000;
+      break;
+    case 'm':
+      delay = number * 1000 * 60;
+      break;
+    default:
+      throw new Error(`[@ignis-web/html]: Invalid measure ${el}`);
+  }
+  return { delay, measure };
+}
