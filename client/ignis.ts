@@ -1,11 +1,13 @@
 import axios from 'axios';
 
-import Manager from './Manager';
-import enum_attr from './enum_attr';
-import { I_life_hooks } from './interface';
-import { debounce } from './helper';
+import Manager from './src/Manager';
+import enum_attr from './src/enum_attr';
+import { I_life_hooks, I_class_form_data } from './src/interface';
+import { debounce } from './src/helper';
 
-function start(options: { onError?(err: Error | any): void; longRequest?: I_life_hooks['longRequest']; requestTimeout?: number} = {}) {
+
+function start(options: { onError?(err: Error | any): void; longRequest?: I_life_hooks['longRequest']; requestTimeout?: number, __FormData?: I_class_form_data} = {}) {
+  options.__FormData = options.__FormData || FormData;
   const life_hooks: I_life_hooks = {
     onError: options.onError || function(){},
     longRequest: options.longRequest || {
@@ -18,12 +20,13 @@ function start(options: { onError?(err: Error | any): void; longRequest?: I_life
 
   const req = axios.create({
     timeout,
+    // adapter: require('axios/lib/adapters/xhr'),
     // validateStatus(status) {
     //   return status === 200 || status === 302 || status === 301;
     // },
   });
 
-  const manager = new Manager(life_hooks, req).start();
+  const manager = new Manager(life_hooks, req, options.__FormData).start();
   // start garbage collector
   document.addEventListener('ignis-html:garbage_collector', debounce(() => {
     manager.garbage_collector();

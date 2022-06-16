@@ -3,7 +3,8 @@
 const express = require('express');
 const assert = require('assert');
 const middleware_formidable = require('./middleware_formidable');
-const { commands } = require('../server');
+const { commands } = require('../client/cmd');
+
 const { view_tick, view_book_change, view_list_books, view_book, view_slow_request } = require('./view');
 
 const router = express.Router();
@@ -17,7 +18,7 @@ router.post('/', async function (req, res) {
   const id_book_change = req.get('X-Ignis-Id');
   const id_list_books = req.get('X-Ignis-Output-Id');
   const { author, name, year, is_classic, type, hero } = req.body;
-  console.log('HERE', req.body);
+
   const errors = {};
   if (!author) {
     errors.author = 'Автор не указан';

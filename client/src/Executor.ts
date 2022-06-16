@@ -1,14 +1,16 @@
 import { Axios, AxiosError, AxiosResponse } from 'axios';
 import FormToJSON from 'forms_to_json';
+
 import morphdom from 'morphdom';
 
 import { getById, addCss, getTarget } from './helper';
 
 import Manager_Long_Request from './Manager_Long_Request';
 import Animation from './Animation';
-import { I_life_hooks } from './interface';
+import { I_life_hooks, I_class_form_data } from './interface';
 import enum_attr from './enum_attr';
 import El from './El';
+import Url from './Url';
 
 type T_cmd = { name: string; method: string; url: string };
 
@@ -29,7 +31,7 @@ export default class Executor {
   private el: El;
 
 
-  constructor(life_hooks: I_life_hooks, el: El, axios: Axios) {
+  constructor(life_hooks: I_life_hooks, el: El, axios: Axios, private _FormData: I_class_form_data) {
     this.el = el;
     this.$el = el.$el;
     this.life_hooks = life_hooks;
@@ -47,17 +49,17 @@ export default class Executor {
 
     const id = $el.id;
     const output_id = $el.getAttribute('data-i-output-id');
-    let url = cmd.url;
+    const url = new Url(cmd.url);
     const origin_url = cmd.url;
     const enctype = $el.getAttribute('enctype')?.trim() || $el.getAttribute('data-i-enctype')?.trim();
     const method = cmd.method;
 
-    if (!output_id) {
-      throw new Error('Not found id = ' + output_id);
+    if (!id && !output_id) {
+      throw new Error('[@ignis-web/html]: Set "id" or "data-i-output-id" for <form>');
     }
 
     if (!['GET', 'DELETE', 'POST', 'PUT'].includes(method)) {
-      throw new Error('Not valid method ' + method);
+      throw new Error('[@ignis-web/html]: Not valid method ' + method);
     }
 
     let req;
@@ -66,18 +68,21 @@ export default class Executor {
 
     if (method === 'GET' || method === 'DELETE') {
       const json = new FormToJSON($form).parse();
-      console.log(json, method, url);
-      url = this._form_add_to_url(url, json);
-      req = axios[method.toLowerCase()](url, { headers });
+      const str_url = url.form_add_to_url(json);
+      console.log(json, method, str_url);
+      req = axios[method.toLowerCase()](str_url, { headers });
     } else { // POST, PUT
       if (enctype === 'multipart/form-data') {
-        const formdata = new FormData($form);
-        console.log(formdata, method, url, output_id);
-        req = axios[method_name](url, formdata, { headers });
+        const formdata = new this._FormData($form);
+        // console.log('Content of FormData', Array.from(new this._FormData($form) as any));
+        const str_url = url.get();
+        console.log(formdata, method, str_url, output_id);
+        req = axios[method_name](str_url, formdata, { headers });
       } else {
         const json = new FormToJSON($form).parse();
-        console.log(json, method, url, output_id);
-        req = axios[method_name](url, json, { headers });
+        const str_url = url.get();
+        console.log(json, method, str_url, output_id);
+        req = axios[method_name](str_url, json, { headers });
       }
     }
 
@@ -101,7 +106,7 @@ export default class Executor {
     const output_id = $el.getAttribute('data-i-output-id');
 
     const method = cmd.method;
-    let url = cmd.url;
+    const url = new Url(cmd.url);
     const origin_url = cmd.url;
 
     if (!['GET', 'POST', 'PUT','DELETE'].includes(method)) {
@@ -114,11 +119,12 @@ export default class Executor {
     let req;
     const json = this._extract_data($el, cmd.name);
     if (method === 'GET' || method === 'DELETE') {
-      console.log(json, method, url);
-      url = this._form_add_to_url(url, json);
-      req = axios[method_name](url, { headers });
+      const str_url = url.form_add_to_url(json);
+      console.log(json, method, str_url);
+      req = axios[method_name](str_url, { headers });
     } else if (method === 'POST' || method === 'PUT') {
-      req = axios[method_name](url, json, { headers });
+      const str_url = url.get();
+      req = axios[method_name](str_url, json, { headers });
     }
 
     this._make_request(req, $el, spinner, origin_url);
@@ -158,7 +164,6 @@ export default class Executor {
   private _handle_response(resp: AxiosResponse, url: string) {
     const { config: _, headers, data } = resp;
     const status = resp.status;
-
     // const url_obj = new URL(config.url as string);
     // const url = url_obj.origin + url_obj.pathname;
 
@@ -236,14 +241,6 @@ export default class Executor {
     morphdom(target, html, options_for_render);
   }
 
-  private _is_absolute_url(url: string) {
-    return new RegExp('^(https?:)?//').test(url);
-  }
-
-  private _create_url_obj(url: string) {
-    return this._is_absolute_url(url) ? new URL(url) : new URL(url, document.baseURI);
-  }
-
   private _apply_css(css?: string) {
     if (css) {
       addCss(css);
@@ -251,13 +248,17 @@ export default class Executor {
   }
 
   private _extract_id(html: string): string {
-    const m = html.match(/d=([^>\s]+)/);
+    const m = html.match(/id=([^>\s]+)/);
     if (!m) {
-      throw new Error('Not found id in html: ' + html);
+      throw new Error('[@ignis-web/html]: Not found id in html - ' + html);
     }
-    const id = m[1];
+    let id = m[1];
     if (!id) {
-      throw new Error('Not found id in html: ' + html);
+      throw new Error('[@ignis-web/html]: Not found id in html - ' + html);
+    }
+    id = id.replace(/"/g, '').replace(/'/g, '').trim(); // remove quote
+    if (!id) {
+      throw new Error('[@ignis-web/html]: Not found id in html - ' + html);
     }
     return id;
   }
@@ -269,14 +270,6 @@ export default class Executor {
       'X-Ignis-Output-Id': output_id,
       'X-Ignis-Request-Id': request_id,
     };
-  }
-
-  private _form_add_to_url(url: string, data) {
-    const url_obj = this._create_url_obj(url);
-    Object.keys(data).forEach(k => {
-      url_obj.searchParams.append(k, data[k]);
-    });
-    return url_obj.href;
   }
 
 }

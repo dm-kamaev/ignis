@@ -1,10 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "es2015",
-      "dom"
-    ],
+    "target": "es2021",
+    // "lib": [
+    //   "es2015"
+    // ],
     "module": "commonjs",
     "moduleResolution": "Node",
     "strict": true,
@@ -17,10 +16,14 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "outDir": "./dist"
+    "outDir": "./cmd"
   },
+  "include": [
+    "./src/cmd/"
+  ],
   "exclude": [
     "node_modules",
-    "src/cmd"
+    "src/*.ts",
+    "*.spec.ts"
   ]
 }

@@ -1,5 +1,5 @@
 import { Axios } from 'axios';
-import { I_life_hooks, T_cmd } from './interface';
+import { I_life_hooks, T_cmd, I_class_form_data } from './interface';
 import { Once, Debounce, Changed } from './modificator';
 
 import Executor from './Executor';
@@ -31,7 +31,7 @@ export default class Manager {
     return Array.from(node.querySelectorAll(Manager.get_selector()));
   }
 
-  constructor(protected life_hooks: I_life_hooks, private axios: Axios) {}
+  constructor(protected life_hooks: I_life_hooks, private axios: Axios, private _FormData: I_class_form_data) {}
 
   start() {
     const $els = Manager.extract_els();
@@ -88,7 +88,7 @@ export default class Manager {
 
   private _bind_cmd(el: El, { name, custom_ev, alias_ev }: T_cmd) {
     // console.log($el, { name, method, url, cb });
-    const executor = new Executor(this.life_hooks, el, this.axios);
+    const executor = new Executor(this.life_hooks, el, this.axios, this._FormData);
     const strategy = new Strategy_handle(el, name, executor, this._get_ev_by_name.bind(this));
     if (custom_ev) {
       strategy.custom_ev(custom_ev);
