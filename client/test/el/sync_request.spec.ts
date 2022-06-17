@@ -21,7 +21,6 @@ describe('[Sync request]', function () {
   });
 
   it('sync request: We are syncing response, discard outdated response by header', async function () {
-    const data = { name: 'Vasya', year: 1850, variant: ['v1', 'v2'], type: 'Fiction', person: 'Anton' };
     document.body.innerHTML = api.view_slow_request(`GET:/api/book/slow_request`, { id: ID, counter: api.counter_slow_request });
     await timeout(100); // wait mounted
     document.getElementById(ID)?.dispatchEvent(new Event('click'));

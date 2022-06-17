@@ -6,6 +6,7 @@ export default class Animation {
     if (!this._has_animation($el, 'on_update')) {
       return;
     }
+
     const animation_on_update = $el.getAttribute(enum_attr.ANIMATION.ON_UPDATE) as string;
     let [class_name, str_delay ] = animation_on_update.trim().split(':');
     if (!class_name) {
