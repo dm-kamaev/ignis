@@ -26,7 +26,7 @@ module.exports = function () {
 
   // ------ END ------
 
-  app.use('/stat', express.static(path.join(__dirname, '../client')));
+  app.use('/stat', express.static(path.join(__dirname, '../')));
 
   // eslint-disable-next-line global-require
   app.use('/api/book', require('./api.js'));

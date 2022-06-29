@@ -1,4 +1,4 @@
-import Ignis from '../../ignis';
+import Ignis from '../../index';
 
 type T_long_request = { start($el: HTMLElement): void; stop($el: HTMLElement): void; };
 

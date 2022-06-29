@@ -5,11 +5,11 @@ module.exports = {
   devtool: 'inline-source-map',
   watch: true,
   entry: {
-    main: './client/example_start.ts',
+    main: './turbo-html/example.ts',
   },
   output: {
-    path: path.resolve(__dirname, './client/dist'),
-    filename: 'example_start.js' // <--- Will be compiled to this single file
+    path: path.resolve(__dirname, './client'),
+    filename: 'example.js' // <--- Will be compiled to this single file
   },
   resolve: {
     extensions: ['.ts', '.js'],

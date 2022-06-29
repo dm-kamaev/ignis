@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es2021",
-    // "lib": [
-    //   "es2015"
-    // ],
+    "target": "es5",
+    "lib": [
+      "es2015",
+      "dom"
+    ],
     "module": "commonjs",
     "moduleResolution": "Node",
     "strict": true,
@@ -16,14 +17,10 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "outDir": "./cmd"
+    "outDir": "client"
   },
-  "include": [
-    "./src/cmd/"
-  ],
   "exclude": [
     "node_modules",
-    "src/*.ts",
-    "*.spec.ts"
+    "./turbo-html/src/cmd"
   ]
 }

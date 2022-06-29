@@ -20,7 +20,7 @@
     "url": "https://github.com/dm-kamaev/ignis-html.git"
   },
   "dependencies": {
-    "axios": "^0.27.2",
+    "axios": "0.27.2",
     "forms_to_json": "0.0.10",
     "keycode": "2.2.1",
     "morphdom": "2.6.1"

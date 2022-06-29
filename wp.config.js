@@ -16,11 +16,11 @@ if (process.env.NODE_ENV === 'prod' || process.env.NODE_ENV === 'production') {
 module.exports = {
   ...params,
   entry: {
-    main: './client/ignis.ts',
+    main: './turbo-html/index.ts',
   },
   output: {
-    path: path.resolve(__dirname, './client/dist'),
-    filename: 'ignis.js' // <--- Will be compiled to this single file
+    path: path.resolve(__dirname, './client'),
+    filename: 'index.js' // <--- Will be compiled to this single file
   },
   resolve: {
     extensions: ['.ts', '.js'],

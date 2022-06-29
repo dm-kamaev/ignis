@@ -3,7 +3,7 @@
 const express = require('express');
 const assert = require('assert');
 const middleware_formidable = require('./middleware_formidable');
-const { commands } = require('../client/cmd');
+const { commands } = require('../commands');
 
 const { view_tick, view_book_change, view_list_books, view_book, view_slow_request } = require('./view');
 

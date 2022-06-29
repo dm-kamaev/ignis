@@ -56,9 +56,7 @@ exports.page = function page(step) {
         <div style="margin:auto"><img src="https://risk-monitoring.ru/img/preloader_grey.gif" alt=""/></div>
       </div>
 
-      <!-- <script src="/stat/dist/ignis.js"></script>  -->
-      <script src="/stat/dist/example_start.js"></script>
-      <!-- <script src="../client/dist/ignis.js"></script> -->
+      <script src="/stat/client/example.js"></script>
     </body>
   </html>
   `;

@@ -1,12 +1,9 @@
 
 # ===== client =====
 build:
-	# npx ncc build ./client/ignis.ts  -o ./client/dist/;
-	# mv ./client/dist/index.js ./client/dist/ignis.js;
 	NODE_ENV=prod npx webpack -c wp.config.js
 
 watch:
-	# npx ncc build ./client/ignis.ts -w -o  ./client/dist/;
 	npx webpack -c wp.config.js
 
 # ===== end =====
@@ -14,7 +11,7 @@ watch:
 # ===== commands =====
 
 build_cmd:
-	npx tsc -p client/tsconfig_cmd.json
+	npx tsc -p tsconfig_cmd.json
 
 # ===== end =====
 
@@ -25,7 +22,7 @@ watch_example:
 # ===== test =====
 
 test_client_watch:
-	npx jest -c client/jest.config.js  --watchAll
+	npx jest -c turbo-html/jest.config.js  --watchAll
 
 # ===== end =====
 

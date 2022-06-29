@@ -1,4 +1,4 @@
-import Ignis from './ignis';
+import Ignis from './index';
 
 
 Ignis.start({
