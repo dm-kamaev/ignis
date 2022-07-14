@@ -1,17 +1,17 @@
-import Ignis from '../../index';
+import TurboHtml from '../../index';
 
 type T_long_request = { start($el: HTMLElement): void; stop($el: HTMLElement): void; };
 
-export default function ({ __FormData, longRequest }: { __FormData?: any, longRequest?: T_long_request } = { __FormData: undefined, longRequest: undefined }) {
+export default function ({ __FormData, longRequest, onError }: { __FormData?: any, longRequest?: T_long_request, onError?: (err: Error) => void } = { __FormData: undefined, longRequest: undefined, onError: undefined }) {
   if (global.address) {
     Object.defineProperty(document, 'baseURI', {
       value: global.address
     });
   }
 
-  const stop = Ignis.start({
+  const stop = TurboHtml.start({
     __FormData,
-    onError(err) {
+    onError: onError || function (err) {
       console.log(err);
       console.log('Request error', err, JSON.stringify(err));
     },

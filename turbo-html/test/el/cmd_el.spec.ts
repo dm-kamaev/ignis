@@ -31,6 +31,23 @@ describe('[Commands for el]', function () {
     expect(ID).equal_content(view_result(ID, data));
   });
 
+
+  it('Update with css', async function () {
+    nock('http://localhost')
+      .post('/api/book/form')
+      .reply(200, function (uri, requestBody) {
+        return [commands.Update({ id: this.req.headers['x-ignis-output-id'], html: view_result(this.req.headers['x-ignis-output-id'], requestBody as any), css: '.test-cls{color:blue}' })];
+      });
+
+    const data = { name: 'Vasya', year: 1850, variant: ['v1', 'v2'], type: 'Fiction', person: 'Anton' };
+    document.body.innerHTML = view_btn(`POST:/api/book/form`, { id: ID, output_id: ID, data });
+    await timeout(400); // wait mounted
+    document.getElementById(ID)?.dispatchEvent(new Event('click'));
+    await timeout(100); // wait submit
+    expect(ID).equal_content(view_result(ID, data));
+    expect(get_css_class('.test-cls')?.style.color).toEqual('blue');
+  });
+
   it('Remove', async function () {
     nock('http://localhost')
       .post('/api/book/form')
@@ -52,6 +69,28 @@ describe('[Commands for el]', function () {
     nock('http://localhost')
       .post('/api/book/form')
       .reply(200, function (uri, requestBody) {
+        return [commands.AppendToTop({ id: this.req.headers['x-ignis-output-id'], html: view_result(id_new_el, data), css: '.test-cls{color:blue}' })];
+      });
+
+    const data = { name: 'Vasya', year: 1850, variant: ['v1', 'v2'], type: 'Fiction', person: 'Anton' };
+    document.body.innerHTML = `
+    <div id=list>
+      ${view_btn(`POST:/api/book/form`, { id: ID, output_id: id_list, data })}
+    </div>`;
+    await timeout(400); // wait mounted
+    document.getElementById(ID)?.dispatchEvent(new Event('click'));
+    await timeout(100); // wait submit
+    expect(id_new_el).equal_content(view_result(id_new_el, data));
+    const new_el = (document.getElementById(ID)?.previousSibling?.previousSibling?.previousSibling as HTMLElement).outerHTML;
+    expect(convert(new_el)).toEqual(convert(view_result(id_new_el, data)));
+  });
+
+  it('AppendToTop with css', async function () {
+    const id_list = 'list';
+    const id_new_el = 'new_el';
+    nock('http://localhost')
+      .post('/api/book/form')
+      .reply(200, function (uri, requestBody) {
         return [commands.AppendToTop({ id: this.req.headers['x-ignis-output-id'], html: view_result(id_new_el, data), })];
       });
 
@@ -66,6 +105,7 @@ describe('[Commands for el]', function () {
     expect(id_new_el).equal_content(view_result(id_new_el, data));
     const new_el = (document.getElementById(ID)?.previousSibling?.previousSibling?.previousSibling as HTMLElement).outerHTML;
     expect(convert(new_el)).toEqual(convert(view_result(id_new_el, data)));
+    expect(get_css_class('.test-cls')?.style.color).toEqual('blue');
   });
 
   it('AppendToEnd', async function () {
@@ -88,6 +128,29 @@ describe('[Commands for el]', function () {
     expect(id_new_el).equal_content(view_result(id_new_el, data));
     const new_el = (document.getElementById(ID)?.nextSibling?.nextSibling?.nextSibling as HTMLElement).outerHTML;
     expect(convert(new_el)).toEqual(convert(view_result(id_new_el, data)));
+  });
+
+  it('AppendToEnd with css', async function () {
+    const id_list = 'list';
+    const id_new_el = 'new_el';
+    nock('http://localhost')
+      .post('/api/book/form')
+      .reply(200, function (uri, requestBody) {
+        return [commands.AppendToEnd({ id: this.req.headers['x-ignis-output-id'], html: view_result(id_new_el, data), css: '.test-cls{color:blue}' })];
+      });
+
+    const data = { name: 'Vasya', year: 1850, variant: ['v1', 'v2'], type: 'Fiction', person: 'Anton' };
+    document.body.innerHTML = `
+    <div id=list>
+      ${view_btn(`POST:/api/book/form`, { id: ID, output_id: id_list, data })}
+    </div>`;
+    await timeout(400); // wait mounted
+    document.getElementById(ID)?.dispatchEvent(new Event('click'));
+    await timeout(100); // wait submit
+    expect(id_new_el).equal_content(view_result(id_new_el, data));
+    const new_el = (document.getElementById(ID)?.nextSibling?.nextSibling?.nextSibling as HTMLElement).outerHTML;
+    expect(convert(new_el)).toEqual(convert(view_result(id_new_el, data)));
+    expect(get_css_class('.test-cls')?.style.color).toEqual('blue');
   });
 
 });
@@ -121,3 +184,27 @@ function view_result(id, { name, year, variant, type, person }) {
 }
 
 const convert = (str) => ('' || str).replace(/\s+/g, ' ').trim();
+
+
+function get_css_class(name: string): CSSPageRule | null {
+  const styleSheets = Array.from(document.styleSheets).filter(
+    (styleSheet) => !styleSheet.href || styleSheet.href.startsWith(window.location.origin)
+  );
+  for (let i = 0; i < styleSheets.length; i++) {
+    if (!(styleSheets[i] instanceof CSSStyleSheet && styleSheets[i].cssRules)) {
+      continue;
+    }
+    const cssRules = styleSheets[i].cssRules;
+    for (let j = 0, l = cssRules.length; j < l; j++) {
+      const rule = cssRules[j];
+      const selectorText = (rule as any).selectorText;
+      if (!selectorText) {
+        continue;
+      }
+      if (selectorText.toLowerCase() === name) {
+        return cssRules[j] as CSSPageRule;
+      }
+    }
+  }
+  return null;
+}

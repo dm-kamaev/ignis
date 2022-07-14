@@ -8,6 +8,7 @@ import enum_attr from './enum_attr';
 
 import * as keycode from 'keycode';
 import { Every, Keydown, Keyup, alias } from './custom_event';
+import { logger } from './helper';
 
 // document.getElementById('book_form')?.addEventListener('keyup', (event) => {
 //   if (keycode.isEventKey(event, 'enter')) {
@@ -33,8 +34,8 @@ export default class Manager {
 
   constructor(protected life_hooks: I_life_hooks, private axios: Axios, private _FormData: I_class_form_data) {}
 
-  start() {
-    const $els = Manager.extract_els();
+  start(node: HTMLElement | Document) {
+    const $els = Manager.extract_els(node);
     this.append($els);
     return this;
   }
@@ -63,7 +64,7 @@ export default class Manager {
   }
 
   garbage_collector() {
-    // console.log('[GC]: before', this.list.length);
+    // console.log('[GC]: before', this._list.length);
     this._list = this._list.filter(el => {
       if (document.contains(el.$el)) {
         return true;
@@ -71,7 +72,7 @@ export default class Manager {
       Object.keys(el.get_cmds()).forEach(name => el.revoke_cmd(name));
       return false;
     });
-    // console.log('[GC]: after', this.list.length);
+    // console.log('[GC]: after', this._list.length);
   }
 
   destroy() {
@@ -196,7 +197,7 @@ class Strategy_handle {
           return el.revoke_cmd(name);
         }
 
-        const spinner = !Boolean($el.hasAttribute('data-i-spinner-off'));
+        const spinner = !Boolean($el.hasAttribute(enum_attr.SPINNER_OFF));
         const exec = () => { executor.run_as_el(e, cmd, { spinner }) };
 
         const mods = cmd.mods;
@@ -251,12 +252,11 @@ class Strategy_handle {
       if (!cmd_alias) {
         return el.revoke_cmd(name);
       }
-      console.log(`${(e as KeyboardEvent).code} is pressed`);
+      logger(`${(e as KeyboardEvent).code} is pressed`);
       const cmd = this._get_ev_by_name($el, key_ev.target_ev);
       // if target command was removed from element then revoke command
       if (!cmd) {
-        el.revoke_cmd(name);
-        return;
+        return el.revoke_cmd(name);
       }
       const spinner = !Boolean($el.hasAttribute('data-i-spinner-off'));
       const fake_event = new Event(key_ev.target_ev);

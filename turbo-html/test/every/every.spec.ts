@@ -1,6 +1,6 @@
 import before_start from '../lib/before_start';
 import start_server from '../lib/start_server';
-const { router, view_tick_v1, view_tick_v2 } = require('./api.js');
+const { router, view_tick_v1, view_tick_v2, view_tick_v3 } = require('./api.js');
 
 jest.setTimeout(10000);
 describe('[@every]', function () {
@@ -39,6 +39,17 @@ describe('[@every]', function () {
     await timeout(1100); // --> 3
     await timeout(1100); // --> Abort
     expect(document.getElementById('test')?.innerHTML.trim()).toEqual('3');
+  });
+
+  it('stop via remove element', async function () {
+    global.app.use('/api/book', router);
+    document.body.innerHTML = view_tick_v3('test', 0);
+    await timeout(1100); // --> 1
+    await timeout(1100); // --> 2
+    expect(document.getElementById('test')?.innerHTML.trim()).toEqual('2');
+    (document.getElementById('test') as HTMLElement).outerHTML = '';
+    await timeout(1100); // wait after remove
+    expect(document.getElementById('test')).toBeFalsy();
   });
 });
 

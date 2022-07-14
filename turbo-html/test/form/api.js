@@ -22,19 +22,15 @@ router.post('/via_formdata', middleware_formidable(), function (req, res) {
   const id = req.get('X-Ignis-Id');
   // const id_list_books = req.get('X-Ignis-Output-Id');
   const { name } = req.fields;
-  console.log(req.fields, req.files);
-
 
   res.status(200).send(view_form_file_submitted(id, { name, file_name: req.files.file.name }));
 });
 
 
 router.put('/via_formdata', middleware_formidable(), function (req, res) {
-  console.log('HERE');
   const id = req.get('X-Ignis-Id');
   // const id_list_books = req.get('X-Ignis-Output-Id');
   const { name } = req.fields;
-  console.log(req.fields, req.files);
 
   res.status(200).send(view_form_file_submitted(id, { name, file_name: req.files.file.name }));
 });
@@ -66,7 +62,6 @@ router.delete('/:id', async function (req, res) {
   // const id_list_books = req.get('X-Ignis-Output-Id');
   const { name, year, variant: str_variant, type, person } = req.query;
   const variant = str_variant.split(',');
-  console.log({ name, year, variant, type, person }, 'back');
   res.status(200).send(view_form_submitted(id, { name, year, variant, type, person }));
 });
 

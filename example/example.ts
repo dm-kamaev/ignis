@@ -1,7 +1,7 @@
-import Ignis from './index';
+import TurboHtml from '../turbo-html';
 
 
-Ignis.start({
+TurboHtml.start({
   onError(err) {
     console.log('Request error', err, JSON.stringify(err));
   },

@@ -21,8 +21,18 @@ let counter2 = 0;
 router.get('/poll_v2', async function (req, res) {
   const id = req.get('X-Ignis-Id');
   // Variant 2
-  console.log({ counter2 });
   res.status(200).send(view_tick_v2(id, ++counter2));
+});
+
+
+let counter3 = 0;
+router.get('/poll_v3', async function (req, res) {
+  const id = req.get('X-Ignis-Id');
+  if (++counter3 > 3) {
+    res.status(286).send();
+  } else {
+    res.status(200).send(view_tick_v3(id, counter3));
+  }
 });
 
 function view_tick_v1(id, counter) {
@@ -44,10 +54,22 @@ function view_tick_v2(id, counter) {
   return `
     <div
       id=${id}
-      ${counter < 3 ? `data-i-ev="@every(1s)->GET:/api/book/poll_v2"` : ''}
+      ${counter < 3 ? 'data-i-ev="@every(1s)->GET:/api/book/poll_v2"' : ''}
     >
       ${counter}
     </div>`;
 };
 
 exports.view_tick_v2 = view_tick_v2;
+
+function view_tick_v3(id, counter) {
+  return `
+    <div
+      id=${id}
+      data-i-ev="@every(1s)->GET:/api/book/poll_v3"
+    >
+      ${counter}
+    </div>`;
+};
+
+exports.view_tick_v3 = view_tick_v3;

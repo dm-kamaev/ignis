@@ -12,15 +12,14 @@
     "noImplicitThis": false,
     "strictPropertyInitialization": false,
     "allowJs": false,
-    "declaration": true,
-    "sourceMap": true,
+    "declaration": false,
+    "sourceMap": false,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "outDir": "client"
+    "outDir": "dist"
   },
   "exclude": [
     "node_modules",
-    "./turbo-html/src/cmd"
   ]
 }

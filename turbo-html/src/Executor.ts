@@ -3,7 +3,7 @@ import FormToJSON from 'forms_to_json';
 
 import morphdom from 'morphdom';
 
-import { getById, addCss, getTarget } from './helper';
+import { getById, addCss, getTarget, logger } from './helper';
 
 import Manager_Long_Request from './Manager_Long_Request';
 import Animation from './Animation';
@@ -69,19 +69,19 @@ export default class Executor {
     if (method === 'GET' || method === 'DELETE') {
       const json = new FormToJSON($form).parse();
       const str_url = url.form_add_to_url(json);
-      console.log(json, method, str_url);
+      logger(json, method, str_url);
       req = axios[method.toLowerCase()](str_url, { headers });
     } else { // POST, PUT
       if (enctype === 'multipart/form-data') {
         const formdata = new this._FormData($form);
         // console.log('Content of FormData', Array.from(new this._FormData($form) as any));
         const str_url = url.get();
-        console.log(formdata, method, str_url, output_id);
+        logger(formdata, method, str_url, output_id);
         req = axios[method_name](str_url, formdata, { headers });
       } else {
         const json = new FormToJSON($form).parse();
         const str_url = url.get();
-        console.log(json, method, str_url, output_id);
+        logger(json, method, str_url, output_id);
         req = axios[method_name](str_url, json, { headers });
       }
     }
@@ -120,7 +120,7 @@ export default class Executor {
     const json = this._extract_data($el, cmd.name);
     if (method === 'GET' || method === 'DELETE') {
       const str_url = url.form_add_to_url(json);
-      console.log(json, method, str_url);
+      logger(json, method, str_url);
       req = axios[method_name](str_url, { headers });
     } else if (method === 'POST' || method === 'PUT') {
       const str_url = url.get();
@@ -153,7 +153,7 @@ export default class Executor {
     const manager_long_request = spinner ? new Manager_Long_Request(this.life_hooks.longRequest, $el).start() : { end: () => {} };
     req.then((resp: AxiosResponse) => this._handle_response(resp, url)).catch(this._handler_error.bind(this)).finally(() => {
       manager_long_request.end();
-      document.body.dispatchEvent(new Event('ignis-html:garbage_collector', {
+      document.body.dispatchEvent(new Event('turbo-html:garbage_collector', {
         bubbles: true,
         cancelable: true,
         composed: false
@@ -201,7 +201,6 @@ export default class Executor {
     if (resp.ev === 'update') {
       const { html, css } = resp.data;
       const id = resp.data.id || this._extract_id(resp.data.html);
-      console.log({ id, html });
       this._apply_css(css);
       this._render(id, html);
     } else if (resp.ev === 'remove') {

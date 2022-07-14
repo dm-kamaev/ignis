@@ -1,3 +1,5 @@
+publish:
+	npm publish --access public
 
 # ===== client =====
 build:
@@ -21,9 +23,16 @@ watch_example:
 
 # ===== test =====
 
-test_client_watch:
-	npx jest -c turbo-html/jest.config.js  --watchAll
+test_watch:
+	npx jest --coverage -c turbo-html/jest.config.js ./turbo-html/test/ --watchAll
+
+test:
+	npx jest --coverage -c turbo-html/jest.config.js ./turbo-html/test/
+
+make_badge: test
+	npx coverage-badges;
 
 # ===== end =====
 
 
+.PHONY: test

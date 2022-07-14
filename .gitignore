@@ -3,3 +3,7 @@ client/*
 commands/*
 !client/.gitkeep
 !commands/.gitkeep
+
+turbo-html/coverage
+
+example/dist/

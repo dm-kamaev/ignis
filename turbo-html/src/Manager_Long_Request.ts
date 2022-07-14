@@ -3,7 +3,7 @@ import { I_life_hooks } from './interface';
 export default class Manager_Long_Request {
   private _is_finished: boolean = false;
   private _is_long_request: boolean = false;
-  private _delay: number = 400; // it's long request, if delay more given  time (milliseconds)
+  private _delay: number = 400; // it's long request, if delay more given time (milliseconds)
   private _min_diff_between_start_stop: number;
   private _start_request: number;
 

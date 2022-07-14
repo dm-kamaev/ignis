@@ -1,4 +1,6 @@
+# Turbo Html
 
+[![Actions Status](https://github.com/dm-kamaev/ignis-html/workflows/Build/badge.svg)](https://github.com/dm-kamaev/ignis-html/actions) ![Coverage](https://github.com/dm-kamaev/ignis-html/blob/master/badges/coverage.svg)
 
 In browser:
 ```js

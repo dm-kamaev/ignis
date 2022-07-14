@@ -270,7 +270,7 @@ exports.view_page = function view_page({ form, list }) {
         <div style="margin:auto"><img src="https://risk-monitoring.ru/img/preloader_grey.gif" alt=""/></div>
       </div>
 
-      <script src="/stat/client/example.js"></script>
+      <script src="/stat/example/dist/example.js"></script>
     </body>
   </html>
   `;

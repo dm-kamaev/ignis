@@ -1,6 +1,6 @@
 import { Debounce, Changed } from './modificator';
 import { T_cmd } from './interface';
-import { get_uid } from './helper';
+import { get_uid, logger } from './helper';
 
 export default class El {
   private _idle_for_debounce: NodeJS.Timeout | null = null;
@@ -28,7 +28,7 @@ export default class El {
   abort_every() {
     if (this._idle_for_every) {
       clearInterval(this._idle_for_every);
-      console.log('ABort!');
+      logger('ABort!');
     }
   }
 
@@ -62,7 +62,7 @@ export default class El {
   }
 
   revoke_cmd(name: string) {
-    console.log('[revoke cmd]: before', Object.keys(this._cmds).length);
+    // console.log('[revoke cmd]: before', Object.keys(this._cmds).length);
     this._cmds[name]?.unsubscribe?.();
     if (name === '@every') {
       this.abort_every();
@@ -71,8 +71,7 @@ export default class El {
     const filtered: El['_cmds'] = {};
     names.forEach(name => filtered[name] = this._cmds[name]);
     this._cmds = filtered;
-    // this.cmds = this.cmds.filter(el => el.name !== name);
-    console.log('[revoke cmd]: after', Object.keys(this._cmds).length);
+    // console.log('[revoke cmd]: after', Object.keys(this._cmds).length);
   }
 
 }

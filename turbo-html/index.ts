@@ -1,3 +1,6 @@
+// flag for show log
+window['__turboHTML_DEBUG__'] = false;
+
 import axios from 'axios';
 
 import Manager from './src/Manager';
@@ -6,7 +9,8 @@ import { I_life_hooks, I_class_form_data } from './src/interface';
 import { debounce } from './src/helper';
 
 
-function start(options: { onError?(err: Error | any): void; longRequest?: I_life_hooks['longRequest']; requestTimeout?: number, __FormData?: I_class_form_data} = {}) {
+function start(options: { root?: Document | HTMLElement; onError?(err: Error | any): void; longRequest?: I_life_hooks['longRequest']; requestTimeout?: number, __FormData?: I_class_form_data} = {}) {
+  options.root = options.root || document;
   options.__FormData = options.__FormData || FormData;
   const life_hooks: I_life_hooks = {
     onError: options.onError || function(){},
@@ -26,9 +30,9 @@ function start(options: { onError?(err: Error | any): void; longRequest?: I_life
     // },
   });
 
-  const manager = new Manager(life_hooks, req, options.__FormData).start();
+  const manager = new Manager(life_hooks, req, options.__FormData).start(options.root);
   // start garbage collector
-  document.addEventListener('ignis-html:garbage_collector', debounce(() => {
+  document.addEventListener('turbo-html:garbage_collector', debounce(() => {
     manager.garbage_collector();
   }, 30000));
 

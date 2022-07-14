@@ -69,3 +69,5 @@ export function parser_delay(input_number: string, input_measure: string, el: st
   }
   return { delay, measure };
 }
+
+export const logger = window['__turboHTML_DEBUG__'] ? (...arg) => console.log.apply(console, arg) : () => { };
