@@ -295,6 +295,3 @@ const options_for_render = {
     animation.on_update($el);
   },
 };
-
-
-
