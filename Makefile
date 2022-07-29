@@ -2,7 +2,7 @@ publish:
 	npm publish --access public
 
 # ===== client =====
-build:
+build_client:
 	NODE_ENV=prod npx webpack -c wp.config.js
 
 watch:
@@ -24,10 +24,10 @@ watch_example:
 # ===== test =====
 
 test_watch:
-	npx jest --coverage -c turbo-html/jest.config.js ./turbo-html/test/ --watchAll
+	npx jest --coverage -c core/jest.config.js ./core/test/ --watchAll
 
 test:
-	npx jest --coverage -c turbo-html/jest.config.js ./turbo-html/test/
+	npx jest --coverage -c core/jest.config.js ./core/test/
 
 make_badge: test
 	npx coverage-badges;

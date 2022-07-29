@@ -25,8 +25,8 @@ router.get('/book', async function (req, res) {
 
 
 router.get('/step1', async function (req, res) {
-  if (req.get('X-Ignis-Request')) {
-    const output_id = req.get('X-Ignis-Output-Id');
+  if (req.get('X-I-Request')) {
+    const output_id = req.get('X-I-Output-Id');
     const html = view_history.step(output_id, 'step1');
     res.status(200).send(html);
   } else {
@@ -37,8 +37,8 @@ router.get('/step1', async function (req, res) {
 
 
 router.get('/step2', async function (req, res) {
-  if (req.get('X-Ignis-Request')) {
-    const output_id = req.get('X-Ignis-Output-Id');
+  if (req.get('X-I-Request')) {
+    const output_id = req.get('X-I-Output-Id');
     const html = view_history.step(output_id, 'step2');
     res.status(200).send(html);
   } else {
@@ -49,8 +49,8 @@ router.get('/step2', async function (req, res) {
 
 
 router.get('/step3', async function (req, res) {
-  if (req.get('X-Ignis-Request')) {
-    const output_id = req.get('X-Ignis-Output-Id');
+  if (req.get('X-I-Request')) {
+    const output_id = req.get('X-I-Output-Id');
     const html = view_history.step(output_id, 'step3');
     res.status(200).send(html);
   } else {

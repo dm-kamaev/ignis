@@ -1,4 +1,4 @@
-import TurboHtml from '../turbo-html';
+import TurboHtml from '../core';
 
 
 TurboHtml.start({

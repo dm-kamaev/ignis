@@ -1,4 +1,4 @@
 {
-  "source": "./turbo-html/coverage/coverage-summary.json",
+  "source": "./core/coverage/coverage-summary.json",
   "attribute": "total.statements.pct"
 }

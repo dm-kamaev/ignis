@@ -16,11 +16,11 @@
     "outDir": "./commands"
   },
   "include": [
-    "./turbo-html/src/cmd/"
+    "./core/src/cmd/"
   ],
   "exclude": [
     "node_modules",
-    "./turbo-html/src/*.ts",
+    "./core/src/*.ts",
     "*.spec.ts"
   ]
 }

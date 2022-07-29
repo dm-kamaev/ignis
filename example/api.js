@@ -15,8 +15,8 @@ const db_books = require('./db_books.js')
 
 
 router.post('/', async function (req, res) {
-  const id_book_change = req.get('X-Ignis-Id');
-  const id_list_books = req.get('X-Ignis-Output-Id');
+  const id_book_change = req.get('X-I-Id');
+  const id_list_books = req.get('X-I-Output-Id');
   const { author, name, year, is_classic, type, hero } = req.body;
 
   const errors = {};
@@ -53,8 +53,8 @@ router.post('/', async function (req, res) {
 });
 
 router.post('/via_formdata', middleware_formidable(), function (req, res) {
-  const id_book_change = req.get('X-Ignis-Id');
-  const id_list_books = req.get('X-Ignis-Output-Id');
+  const id_book_change = req.get('X-I-Id');
+  const id_list_books = req.get('X-I-Output-Id');
   const { author, name, year, is_classic, type, hero } = req.fields;
   console.log(req.files);
 
@@ -93,8 +93,8 @@ router.post('/via_formdata', middleware_formidable(), function (req, res) {
 
 
 router.get('/via_urlencode', function (req, res) {
-  const id_book_change = req.get('X-Ignis-Id');
-  const id_list_books = req.get('X-Ignis-Output-Id');
+  const id_book_change = req.get('X-I-Id');
+  const id_list_books = req.get('X-I-Output-Id');
   const { author, name, year, is_classic, type, hero } = req.query;
 
   const errors = {};
@@ -135,8 +135,8 @@ router.put('/:id', function (req, res) {
 
   const book_id = parseInt(req.params.id, 10);
   const { author, name, year, is_classic, type, hero } = req.body;
-  const id_book_change = req.get('X-Ignis-Id');
-  const id_list_books = req.get('X-Ignis-Output-Id');
+  const id_book_change = req.get('X-I-Id');
+  const id_list_books = req.get('X-I-Output-Id');
 
   const book = db_books.get_all()[book_id];
   db_books.update(book_id, {
@@ -155,7 +155,7 @@ router.put('/form/:id', async function (req, res) {
 
   const book_id = parseInt(req.params.id, 10);
   const { id_list_books } = req.body;
-  const output_id = req.get('X-Ignis-Output-Id');
+  const output_id = req.get('X-I-Output-Id');
 
 
   const book = db_books.get_all()[book_id];
@@ -175,14 +175,14 @@ router.get('/metrica/:id', async function (req, res) {
 
 router.get('/redirect', async function (req, res) {
   console.log('redirect');
-  res.setHeader('X-Ignis-Redirect-To', '/page/redirect').status(200).send();
+  res.setHeader('X-I-Redirect-To', '/page/redirect').status(200).send();
 });
 
 
 router.delete('/:id', function (req, res) {
   console.log(req.body);
   const book_id = parseInt(req.params.id, 10);
-  const output_id = parseInt(req.get('X-Ignis-Output-Id'), 10);
+  const output_id = parseInt(req.get('X-I-Output-Id'), 10);
 
   assert.ok(book_id === output_id, 'Not equal id');
 
@@ -193,7 +193,7 @@ router.delete('/:id', function (req, res) {
 
 let counter = 0;
 router.get('/poll', async function (req, res) {
-  const id = req.get('X-Ignis-Id');
+  const id = req.get('X-I-Id');
   // Variant 1
   if (++counter > 5) {
     res.status(286).send();
@@ -207,13 +207,13 @@ router.get('/poll', async function (req, res) {
 
 let counter_slow_request = 0;
 router.get('/slow_request', async function (req, res) {
-  const id = req.get('X-Ignis-Output-Id');
+  const id = req.get('X-I-Output-Id');
   const counter = ++counter_slow_request;
   if (counter % 2 === 0) {
     await timeout((10-counter)*1000);
   }
   // We are syncing response, discard outdated response by header
-  res.setHeader('X-Ignis-Request-Id', req.get('X-Ignis-Request-Id')).status(200).send(view_slow_request({ id, counter }));
+  res.setHeader('X-I-Request-Id', req.get('X-I-Request-Id')).status(200).send(view_slow_request({ id, counter }));
 });
 
 

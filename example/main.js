@@ -15,8 +15,8 @@ module.exports = function () {
   app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'origin, content-type, content-length, accept, Referer, Location, X-Ignis-Request, X-Ignis-Id, X-Ignis-Output-Id, X-Ignis-Request-Id');
-    res.setHeader('Access-Control-Expose-Headers', 'X-Ignis-Request-Id, X-Ignis-Redirect-To');
+    res.setHeader('Access-Control-Allow-Headers', 'origin, content-type, content-length, accept, Referer, Location, X-I-Request, X-I-Id, X-I-Output-Id, X-I-Request-Id');
+    res.setHeader('Access-Control-Expose-Headers', 'X-I-Request-Id, X-I-Redirect-To');
 
     next();
   });

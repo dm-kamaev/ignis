@@ -25,8 +25,10 @@ Ignis.start({
 });
 ```
 
+<!-- https://gomakethings.com/how-to-turn-any-github-repo-into-a-cdn/#:~:text=Here's%20how%20it%20works.,repository%20name%20for%20the%20project.&text=You%20can%20also%20take%20advantage,number%7D%20to%20the%20repository%20name. -->
 ```js
-  <script src="https://unpkg.com/ignis-html@1.0.3/client/dist/ignis.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/dm-kamaev/ignis-html/turbo-html/index.ts"></script>
+  <script src="https://cdn.jsdelivr.net/gh/dm-kamaev/ignis-html@1.0.3/turbo-html/index.ts"></script>
   <script>
     Ignis.start({
       onError(err) {

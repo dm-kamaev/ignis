@@ -4,6 +4,6 @@ commands/*
 !client/.gitkeep
 !commands/.gitkeep
 
-turbo-html/coverage
+core/coverage
 
 example/dist/

@@ -21,6 +21,6 @@
   },
   "exclude": [
     "node_modules",
-    "./turbo-html/src/cmd"
+    "core/src/cmd"
   ]
 }

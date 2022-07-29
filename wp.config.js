@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === 'prod' || process.env.NODE_ENV === 'production') {
 module.exports = {
   ...params,
   entry: {
-    main: './turbo-html/index.ts',
+    main: './core/index.ts',
   },
   output: {
     path: path.resolve(__dirname, './client'),
