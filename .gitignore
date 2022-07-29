@@ -1,9 +1,4 @@
 node_modules
-client/*
-commands/*
-!client/.gitkeep
-!commands/.gitkeep
 
 core/coverage
 
-example/dist/
