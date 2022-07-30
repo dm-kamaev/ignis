@@ -76,6 +76,9 @@ export default class Manager {
   }
 
   destroy() {
+    this._list.forEach(el => {
+      Object.keys(el.get_cmds()).forEach(name => el.revoke_cmd(name));
+    });
     this._list = [];
   }
 

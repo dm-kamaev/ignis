@@ -2,7 +2,7 @@ import TurboHtml from '../../index';
 
 type T_long_request = { start($el: HTMLElement): void; stop($el: HTMLElement): void; };
 
-export default function ({ __FormData, longRequest, onError }: { __FormData?: any, longRequest?: T_long_request, onError?: (err: Error) => void } = { __FormData: undefined, longRequest: undefined, onError: undefined }) {
+export default function ({ root, __FormData, longRequest, onError }: { root?: HTMLElement; __FormData?: any, longRequest?: T_long_request, onError?: (err: Error) => void } = { __FormData: undefined, longRequest: undefined, onError: undefined }) {
   if (global.address) {
     Object.defineProperty(document, 'baseURI', {
       value: global.address
@@ -10,9 +10,9 @@ export default function ({ __FormData, longRequest, onError }: { __FormData?: an
   }
 
   const stop = TurboHtml.start({
+    root: root || undefined,
     __FormData,
     onError: onError || function (err) {
-      console.log(err);
       console.log('Request error', err, JSON.stringify(err));
     },
     requestTimeout: 10000,
