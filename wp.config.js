@@ -20,7 +20,14 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, './client'),
-    filename: 'index.js' // <--- Will be compiled to this single file
+    filename: 'index.js', // <--- Will be compiled to this single file
+    // library: 'TurboHtml',
+    // libraryTarget: 'umd',
+    libraryExport: 'default',
+    library: {
+      name: 'TurboHtml',
+      type: 'umd'
+    },
   },
   resolve: {
     extensions: ['.ts', '.js'],
