@@ -7,4 +7,9 @@ export declare function parser_delay(input_number: string, input_measure: string
     delay: number;
     measure: "s" | "ms" | "m";
 };
+/**
+ * function for add js, css or link to head
+ * @param content {string}
+ */
+export declare function addToHead(content: string): void;
 export declare const logger: (...arg: any[]) => void;

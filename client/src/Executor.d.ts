@@ -33,6 +33,7 @@ export default class Executor {
     private _apply_response;
     private _render;
     private _apply_css;
+    private _apply_js;
     private _extract_id;
     private _build_headers;
 }

@@ -30,6 +30,7 @@ class Command {
             this.id = data.id ?? null;
             this.html = data.html ?? null;
             this.css = data.css ?? null;
+            this.js = data.js ?? null;
             // console.log(this);
         }
         else {
@@ -38,14 +39,17 @@ class Command {
     }
     toJSON() {
         const data = {};
-        if (!isNil(this.id)) {
+        if (isNotNil(this.id)) {
             data.id = this.id;
         }
-        if (!isNil(this.html)) {
+        if (isNotNil(this.html)) {
             data.html = this.html;
         }
-        if (!isNil(this.css)) {
+        if (isNotNil(this.css)) {
             data.css = this.css;
+        }
+        if (isNotNil(this.js)) {
+            data.js = this.js;
         }
         return { v: 'turbo-html:1', ev: this.ev, data };
     }
@@ -66,7 +70,7 @@ class Remove extends Command {
      */
     constructor(id) {
         if (isNil(id)) {
-            throw new CommandError('[@ignis-web/html:Remove] Not found id - ' + id);
+            throw new CommandError('[turbo-html:Remove] Not found id - ' + id);
         }
         super('remove', { id });
     }
@@ -79,7 +83,7 @@ class Append extends Command {
      */
     constructor(type, data) {
         if (isNil(data.id)) {
-            throw new CommandError('[@ignis-web/html:Append] Not found id - ' + data.id);
+            throw new CommandError('[turbo-html:Append] Not found id - ' + data.id);
         }
         super(type, data);
     }
@@ -102,6 +106,9 @@ class AppendToEnd extends Append {
         super('append_to_end', data);
     }
 }
+function isNotNil(input) {
+    return !(input === undefined || input === null);
+}
 function isNil(input) {
-    return (input === undefined || input === null);
+    return !isNotNil(input);
 }
