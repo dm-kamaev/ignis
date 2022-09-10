@@ -3,7 +3,7 @@ import FormToJSON from 'forms_to_json';
 
 import morphdom from 'morphdom';
 
-import { getById, addCss, getTarget, logger } from './helper';
+import { getById, addToHead, getTarget, logger } from './helper';
 
 import Manager_Long_Request from './Manager_Long_Request';
 import Animation from './Animation';
@@ -182,7 +182,7 @@ export default class Executor {
       data.forEach(cmd => this._apply_response(cmd));
     } else if (data) {
       const html = data;
-      this._apply_response({ ev: 'update', data: { html, css: undefined } });
+      this._apply_response({ ev: 'update', data: { html } });
     } else if (headers['x-i-redirect-to']) {
       window.location.href = headers['x-i-redirect-to'];
     }
@@ -197,11 +197,12 @@ export default class Executor {
     this.life_hooks.onError(err);
   }
 
-  private _apply_response(resp: { ev: 'update', data: { id?: string; html: string, css?: string } } | { ev: 'remove', data: { id: string } } | { ev: 'append_to_top' | 'append_to_end', data: { id: string, html: string, css?: string } }) {
+  private _apply_response(resp: { ev: 'update', data: { id?: string; html: string, css?: string; js?: string } } | { ev: 'remove', data: { id: string } } | { ev: 'append_to_top' | 'append_to_end', data: { id: string, html: string, css?: string; js?: string } }) {
     if (resp.ev === 'update') {
-      const { html, css } = resp.data;
+      const { html, css, js } = resp.data;
       const id = resp.data.id || this._extract_id(resp.data.html);
       this._apply_css(css);
+      this._apply_js(js);
       this._render(id, html);
     } else if (resp.ev === 'remove') {
       const $el = getById(resp.data.id);
@@ -210,8 +211,10 @@ export default class Executor {
       }
       animation.on_remove($el, () => $el.outerHTML = '');
     } else if (resp.ev === 'append_to_top') {
-      const { id, html, css } = resp.data;
+      const { id, html, css, js } = resp.data;
+
       this._apply_css(css);
+      this._apply_js(js);
 
       const $el = getById(id);
       if (!$el) {
@@ -219,8 +222,10 @@ export default class Executor {
       }
       $el.insertAdjacentHTML('afterbegin', html);
     } else if (resp.ev === 'append_to_end') {
-      const { id, html, css } = resp.data;
+      const { id, html, css, js } = resp.data;
+
       this._apply_css(css);
+      this._apply_js(js);
 
       const $el = getById(id);
       if (!$el) {
@@ -242,7 +247,13 @@ export default class Executor {
 
   private _apply_css(css?: string) {
     if (css) {
-      addCss(css);
+      addToHead(css);
+    }
+  }
+
+  private _apply_js(js?: string) {
+    if (js) {
+      addToHead(js);
     }
   }
 
