@@ -18,19 +18,19 @@ class __FormData {
 
 jest.setTimeout(20000);
 describe('[REST form]', function () {
-  let abort;
+  let turboHtml;
   let stop_server;
   const ID = 'test';
 
   beforeAll(async () => {
     stop_server = await start_server();
-    abort = before_start({ __FormData });
+    turboHtml = before_start({ __FormData });
     global.app.use('/api/book', router);
   });
 
   afterAll(async () => {
     stop_server();
-    abort();
+    turboHtml.stop();
   });
 
   it('POST', async function () {

@@ -7,15 +7,15 @@ type T_err = { name?: string, year?: string, variant?: string, type?: string, pe
 
 
 describe('[Preserve form]', function () {
-  let abort;
+  let turboHtml;
   const ID = 'test';
 
   beforeAll(async () => {
-    abort = before_start();
+    turboHtml = before_start();
   });
 
   afterAll(async () => {
-    abort();
+    turboHtml.stop();
   });
 
   it('Form with errors and preserve value for fields', async function () {

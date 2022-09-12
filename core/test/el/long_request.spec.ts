@@ -4,11 +4,11 @@ import timeout from '../lib/timeout';
 
 
 describe('[Long request]', function () {
-  let abort;
+  let turboHtml;
   const ID = 'test';
   const result: { start?: HTMLElement, stop?: HTMLElement } = { start: undefined, stop: undefined };
 
-  beforeAll(async () => abort = before_start({
+  beforeAll(async () => turboHtml = before_start({
     longRequest: {
       start($el) {
         result.start = $el;
@@ -20,7 +20,7 @@ describe('[Long request]', function () {
   }));
 
   afterAll(async () => {
-    abort();
+    turboHtml.stop();
   });
 
 

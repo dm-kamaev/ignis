@@ -19,12 +19,12 @@ describe('[Mount]', function () {
         ${view_content(`POST:/api/book/form`, { id: ID, content: '1' })}
       </div>
     `;
-    const unmount = before_start({ root: document.getElementById(MOUNT_ID) as HTMLElement });
+    const turboHtml = before_start({ root: document.getElementById(MOUNT_ID) as HTMLElement });
     await timeout(400); // wait mounted
     document.getElementById(ID)?.dispatchEvent(new Event('click'));
     await timeout(100); // wait submit
     expect(ID).equal_content(view_content(`POST:/api/book/form`, { id: ID, content: '2' }));
-    unmount();
+    turboHtml.stop();
     await timeout(100); // wait submit
     document.getElementById(ID)?.dispatchEvent(new Event('click'));
     await timeout(100); // wait submit
@@ -52,12 +52,12 @@ describe('[Mount]', function () {
         </div>
       </div>
     `;
-    const unmount = before_start({ root: document.getElementById(MOUNT_ID) as HTMLElement });
+    const turboHtml = before_start({ root: document.getElementById(MOUNT_ID) as HTMLElement });
     await timeout(400); // wait mounted
     document.getElementById(BUTTON_ID)?.dispatchEvent(new Event('click'));
     await timeout(400); // wait submit
     expect(BUTTON_ID).equal_content(view_content(`POST:/api/book/form`, { id: BUTTON_ID, content: '1' }));
-    unmount();
+    turboHtml.stop();
   });
 
 

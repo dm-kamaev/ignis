@@ -8,15 +8,15 @@ const spy_debounce = jest.spyOn(helper, 'debounce').mockImplementation(cb => {
 });
 
 describe('[Garbage collector]', function () {
-  let abort;
+  let turboHtml;
   const ID = 'test';
 
   beforeAll(async () => {
-    abort = before_start();
+    turboHtml = before_start();
   });
 
   afterAll(async () => {
-    abort();
+    turboHtml.stop();
   });
 
 

@@ -5,19 +5,19 @@ const api = require('./api.js');
 
 jest.setTimeout(20000);
 describe('[Sync request]', function () {
-  let abort;
+  let turboHtml;
   let stop_server;
   const ID = 'test';
 
   beforeAll(async () => {
     stop_server = await start_server();
-    abort = before_start();
+    turboHtml = before_start();
     global.app.use('/api/book', api.router);
   });
 
   afterAll(async () => {
     stop_server();
-    abort();
+    turboHtml.stop();
   });
 
   it('sync request: We are syncing response, discard outdated response by header', async function () {

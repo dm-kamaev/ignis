@@ -4,18 +4,18 @@ import timeout from '../lib/timeout';
 
 
 describe('[Error]', function () {
-  let abort;
+  let turboHtml;
   const ID = 'test';
   let error: Error;
 
-  beforeAll(async () => abort = before_start({
+  beforeAll(async () => turboHtml = before_start({
     onError(err) {
       error = err;
     }
   }));
 
   afterAll(async () => {
-    abort();
+    turboHtml.stop();
   });
 
   it('Fail request', async function () {

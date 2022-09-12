@@ -5,11 +5,11 @@ import fire_keyboard_ev from '../lib/fire_keyboard_ev';
 
 
 describe('[Alias keyboard]', function () {
-  let abort;
+  let turboHtml;
   const ID = 'test';
 
   beforeAll(async () => {
-    abort = before_start();
+    turboHtml = before_start();
   });
 
   beforeEach(() => {
@@ -21,7 +21,7 @@ describe('[Alias keyboard]', function () {
   });
 
   afterAll(async () => {
-    abort();
+    turboHtml.stop();
   });
 
   it('@keydown(enter)', async function () {

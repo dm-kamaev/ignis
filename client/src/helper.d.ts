@@ -12,4 +12,5 @@ export declare function parser_delay(input_number: string, input_measure: string
  * @param content {string}
  */
 export declare function addToHead(content: string): void;
+export declare function createFakeEvent(eventName: string, target: HTMLElement): Event;
 export declare const logger: (...arg: any[]) => void;

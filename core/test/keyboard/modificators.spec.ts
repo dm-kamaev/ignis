@@ -6,16 +6,16 @@ import fire_keyboard_ev from '../lib/fire_keyboard_ev';
 
 
 describe('[Modificators keyboard]', function () {
-  let abort;
+  let turboHtml;
   const ID = 'test';
   const ID_result = 'result';
 
   beforeAll(async () => {
-    abort = before_start();
+    turboHtml = before_start();
   });
 
   afterAll(async () => {
-    abort();
+    turboHtml.stop();
   });
 
   afterEach(() => {

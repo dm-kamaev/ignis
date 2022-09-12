@@ -9,7 +9,7 @@ export default function ({ root, __FormData, longRequest, onError }: { root?: HT
     });
   }
 
-  const stop = TurboHtml.start({
+  const turboHtml = new TurboHtml({
     root: root || undefined,
     __FormData,
     onError: onError || function (err) {
@@ -37,7 +37,5 @@ export default function ({ root, __FormData, longRequest, onError }: { root?: HT
     }
   });
 
-  return function abort() {
-    stop();
-  };
+  return turboHtml;
 }

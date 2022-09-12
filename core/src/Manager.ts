@@ -8,7 +8,7 @@ import enum_attr from './enum_attr';
 
 import * as keycode from 'keycode';
 import { Every, Keydown, Keyup, alias } from './custom_event';
-import { logger } from './helper';
+import { createFakeEvent, logger } from './helper';
 
 // document.getElementById('book_form')?.addEventListener('keyup', (event) => {
 //   if (keycode.isEventKey(event, 'enter')) {
@@ -82,6 +82,19 @@ export default class Manager {
     this._list = [];
   }
 
+  /**
+   * exec - call event on element
+   * @param $el - HTMLElement
+   * @param eventName - click, submit and etc.
+   */
+  exec($el: HTMLElement, eventName: string) {
+    const el = this._list.find(el => el.$el === $el);
+    if (!el) {
+      throw new Error(`[turbo-html]: Not found element ${$el}`);
+    }
+
+    el.exec_cb(eventName, createFakeEvent(eventName, el.$el));
+  }
 
   private _subscribe($el: HTMLElement) {
     const cmds = this._parse_cmds($el);
@@ -159,6 +172,7 @@ export default class Manager {
       return { name, method, url, mods, custom_ev: Keyup.is(name) ? new Keyup(name) : Keydown.is(name) ? new Keydown(name) : Every.is(name) ? new Every(name) : undefined  };
     }
   }
+
 }
 
 
@@ -238,6 +252,8 @@ class Strategy_handle {
         }
       });
 
+      el.set_cb(key_ev.name, cb);
+
       $el.addEventListener(key_ev.name, cb, { once: this._get_once($el, name) });
     }
   }
@@ -262,8 +278,8 @@ class Strategy_handle {
         return el.revoke_cmd(name);
       }
       const spinner = !Boolean($el.hasAttribute('data-i-spinner-off'));
-      const fake_event = new Event(key_ev.target_ev);
-      Object.defineProperty(fake_event, 'target', { writable: false, value: $el });
+      const fake_event = createFakeEvent(key_ev.target_ev, $el);
+
       // e.stopPropagation(); // disable for origin element
       if (key_ev.target_ev === 'submit') {
         executor.run_as_form(fake_event, cmd, { spinner });
@@ -291,6 +307,8 @@ class Strategy_handle {
         $el.removeEventListener('keydown', cb2);
       }
     });
+
+    el.set_cb(key_ev.name, cb);
 
     $el.addEventListener(key_ev.name, cb);
   }
@@ -326,7 +344,9 @@ class Strategy_handle {
       }
 
     };
+
     el.set_unsubscribe(name, () => $el.removeEventListener(name, cb));
+    el.set_cb(name, cb);
 
     $el.addEventListener(name, cb, { once: this._get_once($el, name) });
   }
@@ -335,3 +355,5 @@ class Strategy_handle {
     return this._get_ev_by_name($el, name)?.mods.once ? true : false
   }
 }
+
+

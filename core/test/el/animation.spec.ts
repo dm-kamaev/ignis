@@ -6,11 +6,11 @@ import { commands } from '../../src/cmd';
 
 // jest.setTimeout(20000);
 describe('[Animation]', function () {
-  let abort;
+  let turboHtml;
   const ID = 'test';
 
   beforeAll(async () => {
-    abort = before_start();
+    turboHtml = before_start();
     addCss(`
       .fade-in {
         animation: fade_in ease 2s;
@@ -41,7 +41,7 @@ describe('[Animation]', function () {
   });
 
   afterAll(async () => {
-    abort();
+    turboHtml.stop();
   });
 
   it('on update', async function () {

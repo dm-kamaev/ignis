@@ -4,16 +4,16 @@ import timeout from '../lib/timeout';
 
 
 describe('[Modificators]', function () {
-  let abort;
+  let turboHtml;
   const ID = 'test';
   const ID_result = 'result';
 
   beforeAll(async () => {
-    abort = before_start();
+    turboHtml = before_start();
   });
 
   afterAll(async () => {
-    abort();
+    turboHtml.stop();
   });
 
   afterEach(() => {

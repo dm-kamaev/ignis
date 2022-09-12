@@ -9,7 +9,7 @@ import TurboHtml from '@ignis-web/turbo-html/client';
 // import { commands } from '@ignis-web/turbo-html/commands';
 
 
-TurboHtml.start({
+new TurboHtml({
   onError(err) {
     console.log('Request error', err, JSON.stringify(err));
   },
@@ -32,7 +32,7 @@ TurboHtml.start({
   <script src="https://cdn.jsdelivr.net/gh/dm-kamaev/turbo-html/turbo-html/index.ts"></script>
   <script src="https://cdn.jsdelivr.net/gh/dm-kamaev/turbo-html@1.2.0/client/index.js"></script>
   <script>
-    Ignis.start({
+    new TurboHtml({
       onError(err) {
         console.log('Request error', err, JSON.stringify(err));
       },

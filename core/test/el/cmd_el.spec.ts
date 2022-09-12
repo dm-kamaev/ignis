@@ -5,15 +5,15 @@ import timeout from '../lib/timeout';
 
 
 describe('[Commands for el]', function () {
-  let abort;
+  let turboHtml;
   const ID = 'test';
 
   beforeAll(async () => {
-    abort = before_start();
+    turboHtml = before_start();
   });
 
   afterAll(async () => {
-    abort();
+    turboHtml.stop();
   });
 
   it('Update', async function () {

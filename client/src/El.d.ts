@@ -1,8 +1,10 @@
 /// <reference types="node" />
 import { Debounce, Changed } from './modificator';
 import { T_cmd } from './interface';
+declare type T_Cb = (e: Event) => void;
 export default class El {
     $el: HTMLElement;
+    private _hash_cb;
     private _idle_for_debounce;
     private _old_val;
     private _idle_for_every;
@@ -10,6 +12,8 @@ export default class El {
     private _cmds;
     constructor($el: HTMLElement, cmds: T_cmd[]);
     set_debounce_cb(cb: (...any: any[]) => any, mod_debounce: InstanceType<typeof Debounce>): void;
+    set_cb(event_name: string, cb: T_Cb): void;
+    exec_cb(event_name: string, event: Event): void;
     set_idle_for_every(idle: NodeJS.Timeout): void;
     abort_every(): void;
     set_request_id(): string;
@@ -22,3 +26,4 @@ export default class El {
     }>;
     revoke_cmd(name: string): void;
 }
+export {};

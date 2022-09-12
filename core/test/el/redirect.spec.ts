@@ -4,12 +4,12 @@ import timeout from '../lib/timeout';
 
 
 describe('[Redirect]', function () {
-  let abort;
+  let turboHtml;
   const ID = 'test';
   const setHrefSpy = jest.fn(href => expect(href).toEqual('/page/redirect'));
 
   beforeAll(async () => {
-    abort = before_start();
+    turboHtml = before_start();
 
     delete (window as any).location;
     window.location = {} as any;
@@ -20,7 +20,7 @@ describe('[Redirect]', function () {
   });
 
   afterAll(async () => {
-    abort();
+    turboHtml.stop();
   });
 
   it('redirect', async function () {

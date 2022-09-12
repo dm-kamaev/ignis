@@ -79,4 +79,10 @@ export function addToHead(content: string) {
   document.head.append(fragment);
 }
 
+export function createFakeEvent(eventName: string, target: HTMLElement) {
+  const fake_event = new Event(eventName);
+  Object.defineProperty(fake_event, 'target', { writable: false, value: target });
+  return fake_event;
+}
+
 export const logger = window['__turboHTML_DEBUG__'] ? (...arg) => console.log.apply(console, arg) : () => { };

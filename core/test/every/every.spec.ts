@@ -4,17 +4,17 @@ const { router, view_tick_v1, view_tick_v2, view_tick_v3 } = require('./api.js')
 
 jest.setTimeout(10000);
 describe('[@every]', function () {
-  let abort;
+  let turboHtml;
   let stop_server;
 
   beforeAll(async () => {
     stop_server = await start_server();
-    abort = before_start();
+    turboHtml = before_start();
   });
 
   afterAll(async () => {
     stop_server();
-    abort();
+    turboHtml.stop();
   });
 
   it('stop via http code', async function () {
