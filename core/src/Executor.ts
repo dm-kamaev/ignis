@@ -202,8 +202,8 @@ export default class Executor {
       const { html, css, js } = resp.data;
       const id = resp.data.id || this._extract_id(resp.data.html);
       this._apply_css(css);
-      this._apply_js(js);
       this._render(id, html);
+      this._apply_js(js);
     } else if (resp.ev === 'remove') {
       const $el = getById(resp.data.id);
       if (!$el) {
@@ -214,24 +214,24 @@ export default class Executor {
       const { id, html, css, js } = resp.data;
 
       this._apply_css(css);
-      this._apply_js(js);
 
       const $el = getById(id);
       if (!$el) {
         throw new Error('[turbo-html]: Not found element with id "#' + id +'" for "append_to_top"');
       }
       $el.insertAdjacentHTML('afterbegin', html);
+      this._apply_js(js);
     } else if (resp.ev === 'append_to_end') {
       const { id, html, css, js } = resp.data;
 
       this._apply_css(css);
-      this._apply_js(js);
 
       const $el = getById(id);
       if (!$el) {
         throw new Error('[turbo-html]: Not found element with id "#' + id +'" for "append_to_end"');
       }
       $el.insertAdjacentHTML('beforeend', html);
+      this._apply_js(js);
     } else {
       throw new Error('[turbo-html]: Invalid command ' + JSON.stringify(resp));
     }
