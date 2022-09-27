@@ -1,6 +1,6 @@
 {
   "name": "@ignis-web/turbo-html",
-  "version": "1.3.1",
+  "version": "1.3.3",
   "description": "",
   "engines": {
     "node": ">=14.0.0"

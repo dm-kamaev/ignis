@@ -90,7 +90,8 @@ export default class Executor {
   }
 
   run_as_el(e: Event, cmd: T_cmd, settings: { spinner: boolean }) {
-    e.preventDefault();
+    // e.preventDefault();
+    e.stopPropagation();
     this._run(cmd, settings);
   }
 
