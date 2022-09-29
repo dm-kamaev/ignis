@@ -30,27 +30,28 @@ export default class Manager_Long_Request {
 
 
   end() {
-    this._is_finished = true;
-    const delay = this._delay;
+    const me = this;
+    me._is_finished = true;
+    const delay = me._delay;
     // console.log({ is_long_request: this._is_long_request });
-    if (!this._is_long_request) {
+    if (!me._is_long_request) {
       return;
     }
-    const start = this._start_request;
+    const start = me._start_request;
     const now = Date.now();
     // console.log('duration', now - start, now, start);
     const duration = now - start;
     const diff = duration - delay;
     // console.log({ duration, delay, diff });
-    if (diff < this._min_diff_between_start_stop) {
-      const ms = this._min_diff_between_start_stop - diff;
+    if (diff < me._min_diff_between_start_stop) {
+      const ms = me._min_diff_between_start_stop - diff;
       // console.log('next call', ms);
       setTimeout(() => {
-        this._spinner.stop(this._$el);
+        me._spinner.stop(me._$el);
       }, ms);
     } else {
       // console.log('immediatealy call');
-      this._spinner.stop(this._$el);
+      me._spinner.stop(me._$el);
     }
   }
 }
