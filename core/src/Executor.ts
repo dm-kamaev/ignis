@@ -289,7 +289,7 @@ export default class Executor {
 
 const options_for_render = {
   onBeforeElUpdated: function (fromEl, toEl) {
-    if (toEl.tagName === 'INPUT') {
+    if (toEl.tagName === 'INPUT' || toEl.tagName === 'TEXTAREA') {
       const use_prev_value = toEl.hasAttribute(enum_attr.PRESERVE);
       if ((toEl.type === 'checkbox' || toEl.type === 'radio') && use_prev_value) {
         toEl.checked = fromEl.checked;
