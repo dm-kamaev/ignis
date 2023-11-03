@@ -21,6 +21,8 @@
   },
   "exclude": [
     "node_modules",
-    "core/src/cmd"
-  ]
+    "core/src/cmd",
+    "client",
+    "commands"
+  ],
 }
