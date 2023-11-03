@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+;
+;
+;
 exports.default = {
     Update: function (data) {
         return new Update(data);
