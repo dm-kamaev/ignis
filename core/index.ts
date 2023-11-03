@@ -4,22 +4,36 @@ window['__turboHTML_DEBUG__'] = false;
 import axios from 'axios';
 
 import Manager from './src/Manager';
-import enum_attr from './src/enum_attr';
-import { I_life_hooks, I_class_form_data } from './src/interface';
-import { debounce } from './src/helper';
+import enumAttr from './src/enumAttr';
+import { ILifeHooks } from './src/type';
+import { debounce } from './src/helperForBrowser';
+import HttpError from './src/HttpError';
+
+export interface ITurboHtmlOptions {
+  root?: Document | HTMLElement;
+  onStartRequest?: ILifeHooks['onStartRequest'];
+  onError?: ILifeHooks['onError'];
+  onEndRequest?: ILifeHooks['onEndRequest'];
+  onLongRequest?: ILifeHooks['onLongRequest'];
+  requestTimeout?: number
+}
 
 export default class TurboHtml {
-  private _manager: Manager;
-  private _observer: MutationObserver;
+  private readonly _manager: Manager;
+  private readonly _observer: MutationObserver;
 
-  constructor(options: { root?: Document | HTMLElement; onError?(err: Error | any): void; longRequest?: I_life_hooks['longRequest']; requestTimeout?: number, __FormData?: I_class_form_data } = {}) {
+  static HttpError = HttpError;
+
+  constructor(options: ITurboHtmlOptions = {}) {
     options.root = options.root || document;
-    options.__FormData = options.__FormData || FormData;
-    const life_hooks: I_life_hooks = {
-      onError: options.onError || function(){},
-      longRequest: options.longRequest || {
+    const emptyFn = function () {};
+    const lifeHooks: ILifeHooks = {
+      onStartRequest: options.onStartRequest || emptyFn,
+      onError: options.onError || emptyFn,
+      onEndRequest: options.onEndRequest || emptyFn,
+      onLongRequest: options.onLongRequest || {
         start() {},
-        stop() {}
+        end() {}
       },
     };
 
@@ -33,15 +47,15 @@ export default class TurboHtml {
       // },
     });
 
-    const manager = this._manager = new Manager(life_hooks, req, options.__FormData).start(options.root);
+    const manager = this._manager = new Manager(lifeHooks, req).start(options.root);
     // start garbage collector
     document.addEventListener('turbo-html:garbage_collector', debounce(() => {
       manager.garbage_collector();
     }, 30000));
 
     this._observer = new MutationObserver(mutationRecords => {
-      for (let mutation of mutationRecords) {
-        for(let node of Array.from(mutation.addedNodes)) {
+      for (const mutation of mutationRecords) {
+        for (const node of Array.from(mutation.addedNodes)) {
           // We tracking only element nodes  another will skipped (text nodes)
           if (!(node instanceof HTMLElement)) { continue; }
 
@@ -56,7 +70,7 @@ export default class TurboHtml {
         }
 
         // We check attribute "data-i-ev" is changed
-        if (mutation.type === 'attributes' && mutation.attributeName === enum_attr.EV) {
+        if (mutation.type === 'attributes' && mutation.attributeName === enumAttr.EV) {
           const t = mutation.target;
           manager.bindings_new_cmds(t as HTMLElement);
         }
@@ -68,7 +82,7 @@ export default class TurboHtml {
       childList: true, // наблюдать за непосредственными детьми
       subtree: true, // и более глубокими потомками
       attributes: true,
-      attributeFilter: [enum_attr.EV],
+      attributeFilter: [enumAttr.EV],
     });
   }
 

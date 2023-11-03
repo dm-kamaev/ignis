@@ -3,16 +3,16 @@ import FormToJSON from 'forms_to_json';
 
 import morphdom from 'morphdom';
 
-import { getById, addToHead, getTarget, logger } from './helper';
+import { getById, addToHead, getTarget, logger } from './helperForBrowser';
+// import unescape from './util/unescape';
 
-import Manager_Long_Request from './Manager_Long_Request';
+import ManagerLongRequest from './ManagerLongRequest';
 import Animation from './Animation';
-import { I_life_hooks, I_class_form_data } from './interface';
-import enum_attr from './enum_attr';
-import El from './El';
+import { ILifeHooks, ICmd } from './type';
+import enumAttr from './enumAttr';
+import type El from './El';
 import Url from './Url';
-
-type T_cmd = { name: string; method: string; url: string };
+import HttpError from './HttpError';
 
 // set state for current page
 history.replaceState({ v: 'turbo-html:1', url: document.location.href }, '', document.location.href);
@@ -25,82 +25,102 @@ window.addEventListener('popstate', function(ev) {
 const animation = new Animation();
 
 export default class Executor {
-  private axios: Axios;
-  private life_hooks: I_life_hooks;
-  private $el: HTMLElement;
-  private el: El;
+  private readonly $el: HTMLElement;
 
-
-  constructor(life_hooks: I_life_hooks, el: El, axios: Axios, private _FormData: I_class_form_data) {
-    this.el = el;
+  constructor(private readonly _lifeHooks: ILifeHooks, private readonly el: El, private readonly _axios: Axios) {
     this.$el = el.$el;
-    this.life_hooks = life_hooks;
-    this.axios = axios;
   }
 
+  runAsForm(e: Event, cmd: ICmd, { spinner }: { spinner: boolean }) {
+    this._exec(() => {
+      e.preventDefault();
+      const $form: HTMLFormElement = getTarget(e);
+      this._runAsForm($form, cmd, { spinner });
+    });
+  }
 
-  run_as_form(e: Event, cmd: { method: string; url: string }, { spinner }: { spinner: boolean }) {
-    e.preventDefault();
+  runAsEl(e: Event, cmd: ICmd, settings: { spinner: boolean }) {
+    this._exec(() => {
+      // e.preventDefault();
+      e.stopPropagation();
+      this._run(cmd, settings);
+    });
+  }
 
-    const $form: HTMLFormElement = getTarget(e);
+  runAsEvery(cmd: ICmd, settings: { spinner: boolean }) {
+    this._exec(() => {
+      this._run(cmd, settings);
+    });
+  }
 
-    const axios = this.axios;
-    const $el = this.$el;
-
-    const id = $el.id;
-    const output_id = $el.getAttribute('data-i-output-id');
-    const url = new Url(cmd.url);
-    const origin_url = cmd.url;
-    const enctype = $el.getAttribute('enctype')?.trim() || $el.getAttribute('data-i-enctype')?.trim();
-    const method = cmd.method;
-
-    if (!id && !output_id) {
-      throw new Error('[turbo-html]: Set "id" or "data-i-output-id" for <form>');
-    }
-
-    if (!['GET', 'DELETE', 'POST', 'PUT'].includes(method)) {
-      throw new Error('[turbo-html]: Not valid method ' + method);
-    }
-
-    let req;
-    const method_name = method.toLowerCase();
-    const headers = this._build_headers({ id, output_id, request_id: this.el.set_request_id(), });
-
-    if (method === 'GET' || method === 'DELETE') {
-      const json = new FormToJSON($form).parse();
-      const str_url = url.form_add_to_url(json);
-      logger(json, method, str_url);
-      req = axios[method.toLowerCase()](str_url, { headers });
-    } else { // POST, PUT
-      if (enctype === 'multipart/form-data') {
-        const formdata = new this._FormData($form);
-        // console.log('Content of FormData', Array.from(new this._FormData($form) as any));
-        const str_url = url.get();
-        logger(formdata, method, str_url, output_id);
-        req = axios[method_name](str_url, formdata, { headers });
+  runAsExec(cmd: ICmd, settings: { spinner: boolean }) {
+    this._exec(() => {
+      if (this.$el.tagName === 'FORM') {
+        const $form = this.$el as HTMLFormElement;
+        this._runAsForm($form, cmd, settings);
       } else {
-        const json = new FormToJSON($form).parse();
-        const str_url = url.get();
-        logger(json, method, str_url, output_id);
-        req = axios[method_name](str_url, json, { headers });
+        this._run(cmd, settings);
       }
+    });
+  }
+
+  private _runAsForm($form: HTMLFormElement, cmd: ICmd, { spinner }: { spinner: boolean }) {
+      const axios = this._axios;
+      const $el = this.$el;
+
+      const id = $el.id;
+      const output_id = $el.getAttribute('data-i-output-id');
+      const url = new Url(cmd.url);
+      const origin_url = cmd.url;
+      const enctype = $el.getAttribute('enctype')?.trim() || $el.getAttribute('data-i-enctype')?.trim();
+      const method = cmd.method;
+
+      if (!id && !output_id) {
+        throw new Error('[turbo-html]: Set "id" or "data-i-output-id" for <form>');
+      }
+
+      if (!['GET', 'DELETE', 'POST', 'PUT'].includes(method)) {
+        throw new Error(`[turbo-html]: Not valid method ${method} for element ${$el.outerHTML}`);
+      }
+
+      let req;
+      const method_name = method.toLowerCase();
+      const headers = this._build_headers({ id, output_id, request_id: this.el.set_request_id(), });
+
+      if (method === 'GET' || method === 'DELETE') {
+        const json = new FormToJSON($form).parse();
+        const str_url = url.form_add_to_url(json);
+        logger(json, method, str_url);
+        req = axios[method.toLowerCase()](str_url, { headers });
+      } else { // POST, PUT
+        if (enctype === 'multipart/form-data') {
+          const formdata = new FormData($form);
+          // console.log('Content of FormData', Array.from(new this._FormData($form) as any));
+          const str_url = url.get();
+          logger(formdata, method, str_url, output_id);
+          req = axios[method_name](str_url, formdata, { headers });
+        } else {
+          const json = new FormToJSON($form).parse();
+          const str_url = url.get();
+          logger(json, method, str_url, output_id);
+          req = axios[method_name](str_url, json, { headers });
+        }
+      }
+
+      this._make_request(req, $el, cmd, spinner, origin_url);
+  }
+
+  private getLifeHookFromAttribute(expr: string | null) {
+    if (!expr) {
+      return;
     }
-
-    this._make_request(req, $el, spinner, origin_url);
+    const code = `with(this){${`return ${expr}`}}`;
+    const fn = new Function(code).bind(this.$el);
+    return fn;
   }
 
-  run_as_el(e: Event, cmd: T_cmd, settings: { spinner: boolean }) {
-    // e.preventDefault();
-    e.stopPropagation();
-    this._run(cmd, settings);
-  }
-
-  run_as_every(cmd: T_cmd, settings: { spinner: boolean }) {
-    this._run(cmd, settings);
-  }
-
-  private _run(cmd: T_cmd, { spinner }: { spinner: boolean }) {
-    const axios = this.axios;
+  private _run(cmd: ICmd, { spinner }: { spinner: boolean }) {
+    const axios = this._axios;
     const $el = this.$el;
 
     const id = $el.id;
@@ -111,7 +131,7 @@ export default class Executor {
     const origin_url = cmd.url;
 
     if (!['GET', 'POST', 'PUT','DELETE'].includes(method)) {
-      throw new Error('Not valid method ' + method);
+      throw new Error(`[turbo-html]: Not valid method ${method} for element ${$el.outerHTML}`);
     }
 
     const method_name = method.toLowerCase();
@@ -128,16 +148,20 @@ export default class Executor {
       req = axios[method_name](str_url, json, { headers });
     }
 
-    this._make_request(req, $el, spinner, origin_url);
+    this._make_request(req, $el, cmd, spinner, origin_url);
   }
 
   private _extract_data($el: HTMLElement, name: string): Record<string, any> {
-    const obj = $el.hasAttribute(`data-i-info-${name}-js`) ? { attr: `data-i-info-${name}-js`, js: true } :
-      $el.hasAttribute(`data-i-info-${name}`) ? { attr: `data-i-info-${name}`, js: false } :
-      $el.hasAttribute('data-i-info-js') ? { attr: 'data-i-info-js', js: true } :
-      { attr: 'data-i-info', js: false };
-    if (obj.js) {
+    const obj: { attr: string; isJs: boolean } =
+      $el.hasAttribute(`data-i-info-${name}-js`) ? { attr: `data-i-info-${name}-js`, isJs: true } :
+      $el.hasAttribute(`data-i-info-${name}`) ? { attr: `data-i-info-${name}`, isJs: false } :
+      $el.hasAttribute('data-i-info-js') ? { attr: 'data-i-info-js', isJs: true } :
+      { attr: 'data-i-info', isJs: false };
+    if (obj.isJs) {
       const expr = $el.getAttribute(obj.attr);
+      if (!expr) {
+        throw new Error(`[turbo-html]: Not found expression for element: ${$el.outerHTML}`);
+      }
       const code = `with(this){${`return ${expr}`}}`;
       const fn = new Function(code).bind($el);
       return fn();
@@ -150,16 +174,23 @@ export default class Executor {
     }
   }
 
-  private _make_request(req: Promise<AxiosResponse>, $el: HTMLElement, spinner: boolean, url: string) {
-    const manager_long_request = spinner ? new Manager_Long_Request(this.life_hooks.longRequest, $el).start() : { end: () => {} };
-    req.then((resp: AxiosResponse) => this._handle_response(resp, url)).catch(this._handler_error.bind(this)).finally(() => {
-      manager_long_request.end();
-      document.body.dispatchEvent(new Event('turbo-html:garbage_collector', {
-        bubbles: true,
-        cancelable: true,
-        composed: false
-      }));
-    });
+  private _make_request(req: Promise<AxiosResponse>, $el: HTMLElement, cmd: ICmd, spinner: boolean, url: string) {
+    const manager_long_request = spinner ? new ManagerLongRequest(this._lifeHooks.onLongRequest, $el).start() : { end: () => {} };
+    this._lifeHooks.onStartRequest($el, cmd);
+    req
+      .then((resp: AxiosResponse) => {
+        this._lifeHooks.onEndRequest($el, cmd);
+        return this._handle_response(resp, url);
+      })
+      .catch((err) => this._handlerError(err, cmd))
+      .finally(() => {
+        manager_long_request.end();
+        document.body.dispatchEvent(new Event('turbo-html:garbage_collector', {
+          bubbles: true,
+          cancelable: true,
+          composed: false
+        }));
+      });
   }
 
   private _handle_response(resp: AxiosResponse, url: string) {
@@ -189,16 +220,49 @@ export default class Executor {
     }
 
     // push url if has attribute
-    if (this.el.$el.hasAttribute('data-i-push-url')) {
+    if (this.el.$el.hasAttribute(enumAttr['push-url'])) {
       history.pushState({ v:'turbo-html:1', url }, '', url);
     }
   }
 
-  private _handler_error(err: AxiosError) {
-    this.life_hooks.onError(err);
+  private _handlerError(err: AxiosError, cmd: ICmd) {
+    const error = err.name === 'AxiosError' ? new HttpError(err) : err;
+    this._lifeHooks.onError(error, this.$el);
+    this._lifeHooks.onEndRequest(this.$el, cmd, error);
+    return error;
   }
 
-  private _apply_response(resp: { ev: 'update', data: { id?: string; html: string, css?: string; js?: string } } | { ev: 'remove', data: { id: string } } | { ev: 'append_to_top' | 'append_to_end', data: { id: string, html: string, css?: string; js?: string } }) {
+  private _exec(cb: () => void) {
+    try {
+      this._setLifeHooks();
+      cb();
+    } catch (err) {
+      this._lifeHooks.onError(err, this.$el);
+    }
+  }
+
+  private _setLifeHooks() {
+    const $el = this.$el;
+    const onStartRequest = this.getLifeHookFromAttribute($el.getAttribute(enumAttr.hook['on-start-request']));
+    const onError = this.getLifeHookFromAttribute($el.getAttribute(enumAttr.hook['on-error']));
+    const onEndRequest = this.getLifeHookFromAttribute($el.getAttribute(enumAttr.hook['on-end-request']));
+
+    if (onStartRequest) {
+      this._lifeHooks.onStartRequest = onStartRequest;
+    }
+    if (onError) {
+      this._lifeHooks.onError = onError;
+    }
+    if (onEndRequest) {
+      this._lifeHooks.onEndRequest = onEndRequest;
+    }
+  }
+
+  private _apply_response(
+    resp: { ev: 'update', data: { id?: string; html: string, css?: string; js?: string } } |
+          { ev: 'remove', data: { id: string } } |
+          { ev: 'append_to_top' | 'append_to_end', data: { id: string, html: string, css?: string; js?: string }
+  }) {
     if (resp.ev === 'update') {
       const { html, css, js } = resp.data;
       const id = resp.data.id || this._extract_id(resp.data.html);
@@ -243,7 +307,7 @@ export default class Executor {
     if (!target) {
       throw new Error(`Not found element with id: #${id}`);
     }
-    morphdom(target, html, options_for_render);
+    morphdom(target, html, optionsForRender);
   }
 
   private _apply_css(css?: string) {
@@ -287,10 +351,10 @@ export default class Executor {
 
 
 
-const options_for_render = {
+const optionsForRender = {
   onBeforeElUpdated: function (fromEl, toEl) {
     if (toEl.tagName === 'INPUT' || toEl.tagName === 'TEXTAREA') {
-      const use_prev_value = toEl.hasAttribute(enum_attr.PRESERVE);
+      const use_prev_value = toEl.hasAttribute(enumAttr.PRESERVE);
       if ((toEl.type === 'checkbox' || toEl.type === 'radio') && use_prev_value) {
         toEl.checked = fromEl.checked;
       } else if (toEl.type === 'file' && use_prev_value) {
@@ -298,7 +362,7 @@ const options_for_render = {
       } else if (use_prev_value) {
         toEl.value = fromEl.value;
       }
-    } else if (toEl.tagName === 'SELECT' && toEl.hasAttribute(enum_attr.PRESERVE)) {
+    } else if (toEl.tagName === 'SELECT' && toEl.hasAttribute(enumAttr.PRESERVE)) {
       toEl.value = fromEl.value;
     }
     return true;
@@ -306,4 +370,7 @@ const options_for_render = {
   onElUpdated($el: HTMLElement) {
     animation.on_update($el);
   },
-};
+} as const;
+
+
+

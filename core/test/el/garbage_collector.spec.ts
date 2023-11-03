@@ -1,7 +1,7 @@
 import nock from 'nock';
 import before_start from '../lib/before_start';
 import timeout from '../lib/timeout';
-import * as helper from '../../src/helper';
+import * as helper from '../../src/helperForBrowser';
 
 const spy_debounce = jest.spyOn(helper, 'debounce').mockImplementation(cb => {
   return function() { cb() };

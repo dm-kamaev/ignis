@@ -1,5 +1,5 @@
-import { parser_delay } from './helper';
-import enum_attr from './enum_attr';
+import parserDelay from './util/parserDelay';
+import enumAttr from './enumAttr';
 
 export default class Animation {
   on_update($el: HTMLElement) {
@@ -7,10 +7,10 @@ export default class Animation {
       return;
     }
 
-    const animation_on_update = $el.getAttribute(enum_attr.ANIMATION.ON_UPDATE) as string;
+    const animation_on_update = $el.getAttribute(enumAttr.ANIMATION.ON_UPDATE) as string;
     let [class_name, str_delay ] = animation_on_update.trim().split(':');
     if (!class_name) {
-      throw new Error(`[turbo-html]: Invalid ${enum_attr.ANIMATION.ON_UPDATE}="${$el.getAttribute(enum_attr.ANIMATION.ON_UPDATE)}", you must set class`);
+      throw new Error(`[turbo-html]: Invalid ${enumAttr.ANIMATION.ON_UPDATE}="${$el.getAttribute(enumAttr.ANIMATION.ON_UPDATE)}", you must set class`);
     }
     class_name = class_name.trim();
     str_delay = str_delay ? str_delay.trim() : 'delay(100ms)';
@@ -24,13 +24,13 @@ export default class Animation {
     if (!this._has_animation($el, 'on_remove')) {
       return cb();
     }
-    const animation_on_remove = $el.getAttribute(enum_attr.ANIMATION.ON_REMOVE) as string;
+    const animation_on_remove = $el.getAttribute(enumAttr.ANIMATION.ON_REMOVE) as string;
     let [class_name, str_delay] = animation_on_remove.trim().split(':');
     if (!class_name) {
-      throw new Error(`[turbo-html]: Invalid ${enum_attr.ANIMATION.ON_REMOVE}="${$el.getAttribute(enum_attr.ANIMATION.ON_REMOVE)}", you must set class`);
+      throw new Error(`[turbo-html]: Invalid ${enumAttr.ANIMATION.ON_REMOVE}="${$el.getAttribute(enumAttr.ANIMATION.ON_REMOVE)}", you must set class`);
     }
     if (!str_delay) {
-      throw new Error(`[turbo-html]: Invalid ${enum_attr.ANIMATION.ON_REMOVE}="${$el.getAttribute(enum_attr.ANIMATION.ON_REMOVE)}", you must set delay`);
+      throw new Error(`[turbo-html]: Invalid ${enumAttr.ANIMATION.ON_REMOVE}="${$el.getAttribute(enumAttr.ANIMATION.ON_REMOVE)}", you must set delay`);
     }
 
     class_name = class_name.trim();
@@ -56,7 +56,7 @@ export default class Animation {
 
 class Delay {
   private readonly _delay: number;
-  private static reg_exp = /^delay\(([\d\.]+)(ms|s|m)\)$/;
+  private static readonly reg_exp = /^delay\(([\d\.]+)(ms|s|m)\)$/;
   static is(el: string) {
     return Delay.reg_exp.test(el);
   }
@@ -66,7 +66,7 @@ class Delay {
     if (!m) {
       throw new Error(`[turbo-html]: Invalid modifictor "${el}"`);
     }
-    const { delay } = parser_delay(m[1], m[2], el);
+    const { delay } = parserDelay(m[1], m[2], el);
     this._delay = delay;
   }
 

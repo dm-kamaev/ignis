@@ -1,4 +1,4 @@
-import { parser_delay } from './helper';
+import parserDelay from './util/parserDelay';
 
 // @every(3s)
 export class Every {
@@ -12,7 +12,7 @@ export class Every {
     if (!m) {
       throw new Error(`[turbo-html]: Invalid event "${el}"`);
     }
-    const { delay } = parser_delay(m[1], m[2], el);
+    const { delay } = parserDelay(m[1], m[2], el);
     this._delay = delay;
   }
 
@@ -21,9 +21,61 @@ export class Every {
   }
 }
 
-class Key_event {
-  public readonly name: 'keyup' | 'keydown';
-  public readonly shortcut: string;
+// @exec(3s) | @exec
+export class Exec {
+  public readonly _targetEv: string;
+  private readonly _delay?: number;
+  private static readonly _hashRegExp = { withDelay: /^@exec\((\d+)(ms|s|m)\)$/, withOutDelay: /^@exec$/ };
+
+  static is(el: string) {
+    return Exec._hashRegExp.withDelay.test(el) || Exec._hashRegExp.withOutDelay.test(el);
+  }
+
+  constructor(el: string) {
+    const result = this._withDelay(el);
+    if (result instanceof Error) {
+      const result = this._withoutDelay(el);
+      if (result instanceof Error) {
+        throw result;
+      }
+    } else {
+      this._delay = result;
+    }
+  }
+
+  private _withDelay(el: string) {
+    const m = el.match(Exec._hashRegExp.withDelay);
+    if (!m) {
+      return new Error(`[turbo-html]: Invalid event "${el}"`);
+    }
+
+    if (!m[1]) {
+      return new Error('Not found number delay: ' + el);
+    }
+
+    if (!m[2]) {
+      return new Error('Not found measure delay: ' + el);
+    }
+
+    const { delay } = parserDelay(m[1], m[2], el);
+
+    return delay;
+  }
+
+  private _withoutDelay(el: string) {
+    if (!Exec._hashRegExp.withOutDelay.test(el)) {
+      return new Error(`[turbo-html]: Invalid event "${el}"`);
+    }
+  }
+
+  get_delay_as_ms(): number | undefined {
+    return this._delay;
+  }
+}
+
+class KeyEvent {
+  readonly name: 'keyup' | 'keydown';
+  readonly shortcut: string;
   static readonly reg_exp: RegExp;
 
   static is(el: string, reg_exp: RegExp): boolean {
@@ -36,14 +88,14 @@ class Key_event {
       throw new Error('Invalid event: ' + el);
     }
     if (!m[1]) {
-      throw new Error('Not found shorcut: ' + el);
+      throw new Error('Not found shortcut: ' + el);
     }
     this.shortcut = m[1].trim().toLowerCase();
   }
 }
 
 // @keydown(enter)
-export class Keydown extends Key_event {
+export class Keydown extends KeyEvent {
   public readonly name = 'keydown';
   static readonly reg_exp = new RegExp('^@keydown\\((.+)\\)$');
   static is(el: string) {
@@ -55,7 +107,8 @@ export class Keydown extends Key_event {
   }
 }
 
-export class Keyup extends Key_event {
+// @keyup(enter)
+export class Keyup extends KeyEvent {
   public readonly name = 'keyup';
   static readonly reg_exp = new RegExp('^@keyup\\((.+)\\)$');
   static is(el: string) {
@@ -67,7 +120,7 @@ export class Keyup extends Key_event {
   }
 }
 
-class Key_event_alias {
+class KeyEventAlias {
   public readonly name: 'keyup' | 'keydown';
   public readonly shortcut: string;
   public readonly target_ev: string;
@@ -83,7 +136,7 @@ class Key_event_alias {
       throw new Error('Invalid event: ' + el);
     }
     if (!m[1]) {
-      throw new Error('Not found shorcut: ' + el);
+      throw new Error('Not found shortcut: ' + el);
     }
     if (!m[2]) {
       throw new Error('Not found target event: ' + el);
@@ -94,36 +147,31 @@ class Key_event_alias {
 }
 
 // @keydown(enter, submit)
-class Keydown_alias extends Key_event_alias {
+export class KeydownAlias extends KeyEventAlias {
   public readonly name = 'keydown';
   static readonly reg_exp = new RegExp('^@keydown\\((.+),(\\w+)\\)$');
   static is(el: string) {
-    return super.is(el, Keydown_alias.reg_exp);
+    return super.is(el, KeydownAlias.reg_exp);
   }
 
   constructor(el: string) {
-    super(el, Keydown_alias.reg_exp);
+    super(el, KeydownAlias.reg_exp);
   }
 
 }
 
 // @keyup(enter, submit)
-class Keyup_alias extends Key_event_alias {
+export class KeyupAlias extends KeyEventAlias {
   public readonly name = 'keyup';
   static readonly reg_exp = new RegExp('^@keyup\\((.+),(\\w+)\\)$');
 
   static is(el: string) {
-    return super.is(el, Keyup_alias.reg_exp);
+    return super.is(el, KeyupAlias.reg_exp);
   }
 
   constructor(el: string) {
-    super(el, Keyup_alias.reg_exp);
+    super(el, KeyupAlias.reg_exp);
   }
-}
-
-export const alias = {
-  Keydown: Keydown_alias,
-  Keyup: Keyup_alias
 }
 
 

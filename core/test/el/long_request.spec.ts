@@ -9,11 +9,11 @@ describe('[Long request]', function () {
   const result: { start?: HTMLElement, stop?: HTMLElement } = { start: undefined, stop: undefined };
 
   beforeAll(async () => turboHtml = before_start({
-    longRequest: {
+    onLongRequest: {
       start($el) {
         result.start = $el;
       },
-      stop($el) {
+      end($el) {
         result.stop = $el;
       }
     }

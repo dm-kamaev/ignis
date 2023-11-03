@@ -42,10 +42,8 @@ describe('[data-i-info]', function () {
   });
 
   it('as string for click', async function () {
-
-
     const data = { name: 'Vasya', year: 1850, variant: ['v1', 'v2'], type: 'Fiction', person: 'Anton' };
-    document.body.innerHTML = view_btn2(`POST:/api/book`, `data-i-info-click='${JSON.stringify(data)}'`, { id: ID, output_id: ID, data });
+    document.body.innerHTML = view_btn_with_another_event(`POST:/api/book`, `data-i-info-click='${JSON.stringify(data)}'`, { id: ID, output_id: ID, data });
     await timeout(400); // wait mounted
     document.getElementById(ID)?.dispatchEvent(new Event('click'));
     await timeout(100); // wait submit
@@ -54,7 +52,25 @@ describe('[data-i-info]', function () {
 
   it('as runtime object for click', async function () {
     const data = { name: 'Vasya', year: 1850, variant: ['v1', 'v2'], type: 'Fiction', person: 'Anton' };
-    document.body.innerHTML = view_btn2(`POST:/api/book`, `data-i-info-click-js="{ name: 'Vasya', year: 1850, variant: ['v1', 'v2'], type: 'Fiction', person: 'Anton' }"`, { id: ID, output_id: ID, data });
+    document.body.innerHTML = view_btn_with_another_event(`POST:/api/book`, `data-i-info-click-js="{ name: 'Vasya', year: 1850, variant: ['v1', 'v2'], type: 'Fiction', person: 'Anton' }"`, { id: ID, output_id: ID, data });
+    await timeout(400); // wait mounted
+    document.getElementById(ID)?.dispatchEvent(new Event('click'));
+    await timeout(100); // wait submit
+    expect(ID).equal_content(view_result(ID, data));
+  });
+
+   it('(with escape): as string', async function () {
+    const data = { name: 'Vasya', year: 1850, variant: ['v1', 'v2'], type: 'Fiction', person: 'Anton' };
+    document.body.innerHTML = view_btn(`POST:/api/book`, `data-i-info='${escape(JSON.stringify(data))}'`, { id: ID, output_id: ID, data });
+    await timeout(400); // wait mounted
+    document.getElementById(ID)?.dispatchEvent(new Event('click'));
+    await timeout(100); // wait submit
+    expect(ID).equal_content(view_result(ID, data));
+  });
+
+  it('(with escape): as runtime object with escape', async function () {
+    const data = { name: 'Vasya', year: 1850, variant: ['v1', 'v2'], type: 'Fiction', person: 'Anton' };
+    document.body.innerHTML = view_btn(`POST:/api/book`, `data-i-info-js="${escape(`{ name: 'Vasya', year: 1850, variant: ['v1', 'v2'], type: 'Fiction', person: "Anton" }`)}"`, { id: ID, output_id: ID, data });
     await timeout(400); // wait mounted
     document.getElementById(ID)?.dispatchEvent(new Event('click'));
     await timeout(100); // wait submit
@@ -79,7 +95,7 @@ function view_btn(method_url, data_info, { id, output_id, data }) {
   `;
 }
 
-function view_btn2(method_url, data_info, { id, output_id, data }) {
+function view_btn_with_another_event(method_url, data_info, { id, output_id, data }) {
   return `
     <button
       id=${id}
@@ -104,4 +120,26 @@ function view_result(id, { name, year, variant, type, person }) {
       <div id="person">${person}</div>
     </div>
   `;
+}
+
+
+const replacementText: { [name: string]: string } = {
+  '&': '&amp;',
+  '"': '&quot;',
+  '\'': '&#39;',
+  '<': '&lt;',
+  '>': '&gt;',
+};
+
+const stringForRegexp = Object.keys(replacementText).join('|');
+const regExpForEscape = new RegExp(`(${stringForRegexp})`, 'g');
+
+export function escape(input: string): string {
+  return input.replace(regExpForEscape, function ($1) {
+    const output = replacementText[$1];
+    if (!output) {
+      throw new Error(`[turbo-html]: Not found symbol for element ${$1}, input string ${input}`);
+    }
+    return output;
+  });
 }

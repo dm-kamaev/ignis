@@ -1,18 +1,19 @@
-type T_InputUpdate = { id: string, html: string, css?: string; js?: string; };
-type T_InputAppendToTop = { id: string, html: string; css?: string; js?: string; };
-type T_InputAppendToEnd = T_InputAppendToTop;
+
+interface InputUpdate { id: string, html: string, css?: string; js?: string; };
+interface InputAppendToTop { id: string, html: string; css?: string; js?: string; };
+interface InputAppendToEnd extends InputAppendToTop {};
 
 export default {
-  Update: function (data: T_InputUpdate) {
+  Update: function (data: InputUpdate) {
     return new Update(data);
   },
   Remove: function (id: string) {
     return new Remove(id);
   },
-  AppendToTop: function (data: T_InputAppendToTop) {
+  AppendToTop: function (data: InputAppendToTop) {
     return new AppendToTop(data);
   },
-  AppendToEnd: function (data: T_InputAppendToEnd) {
+  AppendToEnd: function (data: InputAppendToEnd) {
     return new AppendToEnd(data);
   }
 };
@@ -71,7 +72,7 @@ class Update extends Command {
    * Update
    * @param {string | { id: string, html: string, css?: string }} data
    */
-  constructor(data: T_InputUpdate) {
+  constructor(data: InputUpdate) {
     super('update', data);
   }
 }
@@ -96,7 +97,7 @@ class Append extends Command {
    * @param {string} type - 'append_to_top' | 'append_to_end'
    * @param {{ id: string, html: string; css?: string }} data
    */
-  constructor(type: 'append_to_top' | 'append_to_end', data: T_InputAppendToTop | T_InputAppendToEnd) {
+  constructor(type: 'append_to_top' | 'append_to_end', data: InputAppendToTop | InputAppendToEnd) {
     if (isNil(data.id)) {
       throw new CommandError('[turbo-html:Append] Not found id - '+data.id);
     }
@@ -110,7 +111,7 @@ class AppendToTop extends Append {
   * AppendToTop
   * @param {{ id: string, html: string; css?: string }} data
   */
-  constructor(data: T_InputAppendToTop) {
+  constructor(data: InputAppendToTop) {
     super('append_to_top', data);
   }
 }
@@ -120,7 +121,7 @@ class AppendToEnd extends Append {
   * AppendToEnd
   * @param {{ id: string, html: string; css?: string }} data
   */
-  constructor(data: T_InputAppendToEnd) {
+  constructor(data: InputAppendToEnd) {
     super('append_to_end', data);
   }
 }

@@ -1,13 +1,13 @@
-import { I_life_hooks } from './interface';
+import { ILifeHooks } from './type';
 
-export default class Manager_Long_Request {
+export default class ManagerLongRequest {
   private _is_finished: boolean = false;
   private _is_long_request: boolean = false;
-  private _delay: number = 400; // it's long request, if delay more given time (milliseconds)
-  private _min_diff_between_start_stop: number;
+  private readonly _delay: number = 400; // it's long request, if delay more given time (milliseconds)
+  private readonly _min_diff_between_start_stop: number;
   private _start_request: number;
 
-  constructor(private _spinner: I_life_hooks['longRequest'], private _$el: HTMLElement) {
+  constructor(private readonly _spinner: ILifeHooks['onLongRequest'], private readonly _$el: HTMLElement) {
     const min_time_for_loader = 1000; //  1 second
     this._min_diff_between_start_stop = min_time_for_loader - this._delay; // We protect from flickering when show "loader"
   }
@@ -47,11 +47,11 @@ export default class Manager_Long_Request {
       const ms = me._min_diff_between_start_stop - diff;
       // console.log('next call', ms);
       setTimeout(() => {
-        me._spinner.stop(me._$el);
+        me._spinner.end(me._$el);
       }, ms);
     } else {
       // console.log('immediatealy call');
-      me._spinner.stop(me._$el);
+      me._spinner.end(me._$el);
     }
   }
 }

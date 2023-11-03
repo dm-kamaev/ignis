@@ -1,8 +1,8 @@
-import { parser_delay } from './helper';
+import parserDelay from './util/parserDelay';
 
 abstract class Modificator {
   static is(el: string): boolean { return false; };
-  new(el: string) { };
+  new(el: string) {};
 }
 
 export class Once extends Modificator {
@@ -27,7 +27,7 @@ export class Debounce extends Modificator {
     if (!m) {
       throw new Error(`[turbo-html]: Invalid modifictor "${el}"`);
     }
-    const { delay } = parser_delay(m[1], m[2], el);
+    const { delay } = parserDelay(m[1], m[2], el);
     this._delay = delay;
   }
 

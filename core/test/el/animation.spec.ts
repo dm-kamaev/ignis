@@ -1,7 +1,7 @@
 import nock from 'nock';
 import before_start from '../lib/before_start';
 import timeout from '../lib/timeout';
-import { addCss } from '../../src/helper';
+import { addCss } from '../../src/helperForBrowser';
 import { commands } from '../../src/cmd';
 
 // jest.setTimeout(20000);

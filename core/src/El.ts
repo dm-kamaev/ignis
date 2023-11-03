@@ -1,18 +1,18 @@
 import { Debounce, Changed } from './modificator';
-import { T_cmd } from './interface';
-import { get_uid, logger } from './helper';
+import { ICmd } from './type';
+import { get_uid, logger } from './helperForBrowser';
 
-type T_Cb = (e: Event) => void;
+interface ICb { (e: Event): void }
 
 export default class El {
-  private _hash_cb: Record<string, T_Cb> = {};
-  private _idle_for_debounce: NodeJS.Timeout | null = null;
+  private _hash_cb: Record<string, ICb> = {};
+  private _idle_for_debounce: number | null = null;
   private _old_val: any = null;
   private _idle_for_every: NodeJS.Timeout | null = null;
   private _request_id: string;
-  private _cmds: Record<string, T_cmd & { unsubscribe?: () => void }> = {};
+  private _cmds: Record<string, ICmd & { unsubscribe?: () => void }> = {};
 
-  constructor(public $el: HTMLElement, cmds: T_cmd[]) {
+  constructor(public $el: HTMLElement, cmds: ICmd[]) {
     cmds.forEach(el => {
       this._cmds[el.name] = el;
     });
@@ -25,7 +25,7 @@ export default class El {
     this._idle_for_debounce = setTimeout(cb, mod_debounce.get_delay_as_ms());
   }
 
-  set_cb(event_name: string, cb: T_Cb) {
+  set_cb(event_name: string, cb: ICb) {
     this._hash_cb[event_name] = cb;
   }
 
@@ -65,7 +65,7 @@ export default class El {
     return result;
   }
 
-  assign_cmd(cmd: T_cmd) {
+  assign_cmd(cmd: ICmd) {
     this._cmds[cmd.name] = cmd;
   }
 
@@ -85,17 +85,11 @@ export default class El {
     }
     this._cmds = omit(this._cmds, name);
     this._hash_cb = omit(this._hash_cb, name);
-
-    // const names = Object.keys(this._cmds).filter(n => n !== name);
-    // const filtered: El['_cmds'] = {};
-    // names.forEach(name => filtered[name] = this._cmds[name]);
-    // this._cmds = filtered;
-    // console.log('[revoke cmd]: after', Object.keys(this._cmds).length);
   }
 
 }
 
-function omit<T, K extends keyof T>(obj: T, key: K): T {
+function omit<T extends {}, K extends keyof T>(obj: T, key: K): T {
   const result = {} as T;
   Object.keys(obj).filter(k => k !== key).forEach(key => result[key] = obj[key]);
   return result;

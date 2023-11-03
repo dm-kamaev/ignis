@@ -1,8 +1,6 @@
-import TurboHtml from '../../index';
+import TurboHtml, { ITurboHtmlOptions } from '../../index';
 
-type T_long_request = { start($el: HTMLElement): void; stop($el: HTMLElement): void; };
-
-export default function ({ root, __FormData, longRequest, onError }: { root?: HTMLElement; __FormData?: any, longRequest?: T_long_request, onError?: (err: Error) => void } = { __FormData: undefined, longRequest: undefined, onError: undefined }) {
+export default function ({ root, onLongRequest, onStartRequest, onError, onEndRequest }: ITurboHtmlOptions = {}) {
   if (global.address) {
     Object.defineProperty(document, 'baseURI', {
       value: global.address
@@ -10,13 +8,14 @@ export default function ({ root, __FormData, longRequest, onError }: { root?: HT
   }
 
   const turboHtml = new TurboHtml({
-    root: root || undefined,
-    __FormData,
+    root,
+    onStartRequest,
     onError: onError || function (err) {
       console.log('Request error', err, JSON.stringify(err));
     },
+    onEndRequest,
     requestTimeout: 10000,
-    longRequest: longRequest || {
+    onLongRequest: onLongRequest || {
       start($el: HTMLElement) {
         // is-loading
         // console.log('Show Loader');
@@ -26,7 +25,7 @@ export default function ({ root, __FormData, longRequest, onError }: { root?: HT
         //   (document.querySelector('.global-spinner') as HTMLElement).style.display = 'flex';
         // }
       },
-      stop($el: HTMLElement) {
+      end($el: HTMLElement) {
         // if ($el.tagName === 'BUTTON') {
         //   $el.classList.toggle('is-loading');
         // } else {

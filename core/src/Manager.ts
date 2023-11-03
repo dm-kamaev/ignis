@@ -1,14 +1,14 @@
 import { Axios } from 'axios';
-import { I_life_hooks, T_cmd, I_class_form_data } from './interface';
+import { ILifeHooks, ICmd } from './type';
 import { Once, Debounce, Changed } from './modificator';
 
 import Executor from './Executor';
 import El from './El';
-import enum_attr from './enum_attr';
+import enumAttr from './enumAttr';
 
-import * as keycode from 'keycode';
-import { Every, Keydown, Keyup, alias } from './custom_event';
-import { createFakeEvent, logger } from './helper';
+import { Every, Exec, Keydown, Keyup, KeydownAlias, KeyupAlias, } from './customCmd';
+import { createFakeEvent } from './helperForBrowser';
+import StrategyHandle from './StrategyHandle';
 
 // document.getElementById('book_form')?.addEventListener('keyup', (event) => {
 //   if (keycode.isEventKey(event, 'enter')) {
@@ -25,14 +25,14 @@ export default class Manager {
   private _list: El[] = [];
 
   static get_selector() {
-    return '['+enum_attr.EV+']';
+    return '['+enumAttr.EV+']';
   }
 
   static extract_els(node: HTMLElement | Document = document): HTMLElement[] {
     return Array.from(node.querySelectorAll(Manager.get_selector()));
   }
 
-  constructor(protected life_hooks: I_life_hooks, private axios: Axios, private _FormData: I_class_form_data) {}
+  constructor(protected readonly lifeHooks: ILifeHooks, private readonly axios: Axios) {}
 
   start(node: HTMLElement | Document) {
     const $els = Manager.extract_els(node);
@@ -55,6 +55,7 @@ export default class Manager {
     }
     const cache = found.get_cmds();
     const cmds = this._parse_cmds($el);
+
     cmds.forEach(cmd => {
       if (!cache[cmd.name]) {
         found.assign_cmd(cmd);
@@ -103,13 +104,13 @@ export default class Manager {
     return el;
   }
 
-  private _bind_cmd(el: El, { name, custom_ev, alias_ev }: T_cmd) {
+  private _bind_cmd(el: El, { name, custom_ev, alias_ev }: ICmd) {
     // console.log($el, { name, method, url, cb });
-    const executor = new Executor(this.life_hooks, el, this.axios, this._FormData);
-    const strategy = new Strategy_handle(el, name, executor, this._get_ev_by_name.bind(this));
+    const executor = new Executor(this.lifeHooks, el, this.axios);
+    const strategy = new StrategyHandle(el, name, executor, this._get_ev_by_name.bind(this));
     if (custom_ev) {
       strategy.custom_ev(custom_ev);
-    } else if (alias_ev) {
+    } else if (alias_ev instanceof KeyupAlias || alias_ev instanceof KeydownAlias) {
       strategy.alias(alias_ev);
     } else {
       strategy.default();
@@ -129,13 +130,28 @@ export default class Manager {
     return cmds_str.map(el => this._parse_cmd(el));
   }
 
-  private _parse_cmd(cmd: string) {
+  private _parse_cmd(cmd: string): ICmd {
     const [ name, method_url, modificators ] = cmd.split('->');
     const default_val = { method: '', url: '', mods: { once: undefined, debounce: undefined, changed: undefined }};
-    if (alias.Keydown.is(name)) {
-      return { name, ...default_val, alias_ev: new alias.Keydown(name) }
-    } else if (alias.Keyup.is(name)) {
-      return { name, ...default_val, alias_ev: new alias.Keyup(name) }
+    // @keydown(enter, submit)
+    if (KeydownAlias.is(name)) {
+      return { name, ...default_val, alias_ev: new KeydownAlias(name) };
+    // @keyup(enter, submit)
+    } else if (KeyupAlias.is(name)) {
+      return { name, ...default_val, alias_ev: new KeyupAlias(name) };
+
+    // click->POST:/api/book/revoke
+    // mouseover->GET:http://127.0.0.1:9002/api/book/metrica/2?utm_source=web
+    // mouseover->GET:http://127.0.0.1:9002/api/book/metrica/2->debounce(1s),once
+    // keyup->GET:http://127.0.0.1:9002/api/book/metrica/2->debounce(2s),changed(value)
+
+    // @keyup(enter)->POST:/api/book/revoke
+    // @keydown(enter)->POST:/api/book/revoke
+
+    // @every(3s)->GET:http://127.0.0.1:9002/api/book/poll
+
+    // @exec(1m)->GET:http://127.0.0.1:9002/api/book/poll
+    // @exec()->GET:http://127.0.0.1:9002/api/book/poll
     } else {
       if (!method_url) {
         throw new Error(`[turbo-html]: Incorrect address: "${method_url}" in cmd "${cmd}"`);
@@ -150,13 +166,13 @@ export default class Manager {
       if (!m[2]) {
         throw new Error(`[turbo-html]: Incorrect url in address: "${method_url}" in cmd "${cmd}"`);
       }
-      let method: string = m[1].trim();
-      let url: string = m[2].trim();
+      const method = m[1].trim();
+      const url = m[2].trim();
       const list_mod = (modificators || '').trim().split(',').map(el => el.trim()).filter(Boolean);
       const mods: {
-        once?: InstanceType<typeof Once>;
-        debounce?: InstanceType<typeof Debounce>;
-        changed?: InstanceType<typeof Changed>;
+        once?: Once;
+        debounce?: Debounce;
+        changed?: Changed;
       } = {};
       list_mod.forEach(el => {
         if (Once.is(el)) {
@@ -169,191 +185,32 @@ export default class Manager {
           throw new Error('[turbo-html]: Unknown modificator '+el+', command = '+cmd);
         }
       });
-      return { name, method, url, mods, custom_ev: Keyup.is(name) ? new Keyup(name) : Keydown.is(name) ? new Keydown(name) : Every.is(name) ? new Every(name) : undefined  };
-    }
-  }
 
-}
-
-
-class Strategy_handle {
-  constructor(private el: El, private name: string, private executor: Executor, private _get_ev_by_name: Manager['_get_ev_by_name']) {}
-
-  custom_ev(custom_ev: T_cmd['custom_ev']) {
-    const { el, name, executor } = this;
-    const $el = el.$el;
-    if (custom_ev instanceof Every) {
-      const every = custom_ev;
-      const delay = every.get_delay_as_ms();
-
-      const idle = setInterval(() => {
-        const cmd = this._get_ev_by_name($el, name);
-        // if was removed from DOM then remove element
-        if (!document.contains($el)) {
-          return el.revoke_cmd(name);
-        }
-        // if command was removed  from element then revoke command and abort polling
-        if (!cmd) {
-          return el.revoke_cmd(name);
-        }
-        executor.run_as_every(cmd, { spinner: false });
-      }, delay);
-      el.set_idle_for_every(idle);
-
-      el.set_unsubscribe(name, () => {
-        el.abort_every();
-      });
-    } else if (custom_ev instanceof Keydown || custom_ev instanceof Keyup) {
-      const key_ev = custom_ev;
-      const cb = (e: Event) => {
-        if (!keycode.isEventKey(e, key_ev.shortcut)) {
-          return;
-        }
-        const cmd = this._get_ev_by_name($el, name);
-        if (!cmd) {
-          return el.revoke_cmd(name);
-        }
-
-        const spinner = !Boolean($el.hasAttribute(enum_attr.SPINNER_OFF));
-        const exec = () => { executor.run_as_el(e, cmd, { spinner }) };
-
-        const mods = cmd.mods;
-        if (mods.changed) {
-          if (el.is_not_changed($el, mods.changed)) {
-            return;
-          }
-        }
-
-        if (mods.debounce) {
-          el.set_debounce_cb(exec, mods.debounce);
-        } else {
-          exec();
-        }
-      };
-
-      let cb2: (e: Event) => void;
-      // We resolve problem with submit form twice (browser fire form submit on "keydown" and "keyup" for "enter", by default)
-      // https://localcoder.org/form-submitted-twice-using-submit-on-keyup
-      // We prevent this behaviour
-      if (key_ev.shortcut === 'enter' && key_ev.name === 'keyup') {
-        cb2 = (e: Event) => {
-          if (keycode.isEventKey(e, key_ev.shortcut)) {
-            e.preventDefault();
-            return false;
-          }
+      const cmdObj: {
+        name: string;
+        method: string;
+        url: string;
+        mods: {
+            once?: Once | undefined;
+            debounce?: Debounce | undefined;
+            changed?: Changed | undefined;
         };
-        $el.addEventListener('keydown', cb2);
+        custom_ev?: Keyup | Keydown | Every | Exec | undefined;
+      } = { name, method, url, mods, custom_ev: undefined };
+      if (Keyup.is(name)) {
+        cmdObj.custom_ev = new Keyup(name);
+      } else if (Keydown.is(name)) {
+        cmdObj.custom_ev = new Keydown(name);
+      } else if (Every.is(name)) {
+        cmdObj.custom_ev = new Every(name);
+      } else if (Exec.is(name)) {
+        cmdObj.custom_ev = new Exec(name);
       }
-
-      el.set_unsubscribe(name, () => {
-        $el.removeEventListener(key_ev.name, cb);
-        if (cb2) {
-          $el.removeEventListener('keydown', cb2);
-        }
-      });
-
-      el.set_cb(key_ev.name, cb);
-
-      $el.addEventListener(key_ev.name, cb, { once: this._get_once($el, name) });
+      return cmdObj;
     }
   }
 
-  alias(key_ev: NonNullable<T_cmd['alias_ev']>) {
-    const { el, name, executor } = this;
-    const $el = el.$el;
-    const cb = (e: Event) => {
-      if (!keycode.isEventKey(e, key_ev.shortcut)) {
-        return;
-      }
-      e.preventDefault(); // disable for origin element
-      const cmd_alias = this._get_ev_by_name($el, name);
-      // if alias command was removed from element then revoke command
-      if (!cmd_alias) {
-        return el.revoke_cmd(name);
-      }
-      logger(`${(e as KeyboardEvent).code} is pressed`);
-      const cmd = this._get_ev_by_name($el, key_ev.target_ev);
-      // if target command was removed from element then revoke command
-      if (!cmd) {
-        return el.revoke_cmd(name);
-      }
-      const spinner = !Boolean($el.hasAttribute('data-i-spinner-off'));
-      const fake_event = createFakeEvent(key_ev.target_ev, $el);
-
-      // e.stopPropagation(); // disable for origin element
-      if (key_ev.target_ev === 'submit') {
-        executor.run_as_form(fake_event, cmd, { spinner });
-      } else {
-        executor.run_as_el(fake_event, cmd, { spinner });
-      }
-    };
-    let cb2: (e: Event) => void;
-    // We resolve problem with submit form twice (browser fire form submit on "keydown" and "keyup" for "enter", by default)
-    // https://localcoder.org/form-submitted-twice-using-submit-on-keyup
-    // We prevent this behaviour
-    if (key_ev.shortcut === 'enter' && key_ev.name === 'keyup') {
-      cb2 = (e: Event) => {
-        if (keycode.isEventKey(e, key_ev.shortcut)) {
-          e.preventDefault();
-          return false;
-        }
-      };
-      $el.addEventListener('keydown', cb2);
-    }
-
-    el.set_unsubscribe(name, () => {
-      $el.removeEventListener(key_ev.name, cb);
-      if (cb2) {
-        $el.removeEventListener('keydown', cb2);
-      }
-    });
-
-    el.set_cb(key_ev.name, cb);
-
-    $el.addEventListener(key_ev.name, cb);
-  }
-
-  default() {
-    const { el, name, executor } = this;
-    const $el = el.$el;
-    const cb = (e: Event) => {
-      const cmd = this._get_ev_by_name($el, name);
-      if (!cmd) {
-        return el.revoke_cmd(name);
-      }
-
-      let exec: () => void;
-      const spinner = !Boolean($el.hasAttribute('data-i-spinner-off'));
-      if (name === 'submit') {
-        exec = () => executor.run_as_form(e, cmd, { spinner });
-      } else {
-        exec = () => executor.run_as_el(e, cmd, { spinner });
-      }
-
-      const mods = cmd.mods;
-      if (mods.changed) {
-        if (el.is_not_changed($el, mods.changed)) {
-          return;
-        }
-      }
-
-      if (mods.debounce) {
-        el.set_debounce_cb(exec, mods.debounce);
-      } else {
-        exec();
-      }
-
-    };
-
-    el.set_unsubscribe(name, () => $el.removeEventListener(name, cb));
-    el.set_cb(name, cb);
-
-    $el.addEventListener(name, cb, { once: this._get_once($el, name) });
-  }
-
-  private _get_once($el: HTMLElement, name: string) {
-    return this._get_ev_by_name($el, name)?.mods.once ? true : false
-  }
 }
+
 
 
