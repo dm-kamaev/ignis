@@ -1,4 +1,4 @@
-import { Every, Keydown, Keyup, alias } from './custom_event';
+import { Every, Keydown, Keyup, alias } from './customCmd';
 export interface I_life_hooks {
     onError(err: Error | any): void;
     longRequest: {

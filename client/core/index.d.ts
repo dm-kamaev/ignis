@@ -1,12 +1,18 @@
-import { I_life_hooks, I_class_form_data } from './src/interface';
-declare function start(options?: {
+import { ILifeHooks } from './src/type';
+import HttpError from './src/HttpError';
+export interface ITurboHtmlOptions {
     root?: Document | HTMLElement;
-    onError?(err: Error | any): void;
-    longRequest?: I_life_hooks['longRequest'];
+    onStartRequest?: ILifeHooks['onStartRequest'];
+    onError?: ILifeHooks['onError'];
+    onEndRequest?: ILifeHooks['onEndRequest'];
+    onLongRequest?: ILifeHooks['onLongRequest'];
     requestTimeout?: number;
-    __FormData?: I_class_form_data;
-}): () => void;
-declare const _default: {
-    start: typeof start;
-};
-export default _default;
+}
+export default class TurboHtml {
+    private readonly _manager;
+    private readonly _observer;
+    static HttpError: typeof HttpError;
+    constructor(options?: ITurboHtmlOptions);
+    exec($el: HTMLElement, name: string): void;
+    stop(): void;
+}

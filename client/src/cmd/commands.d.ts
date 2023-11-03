@@ -1,16 +1,16 @@
-declare type T_InputUpdate = {
+type T_InputUpdate = {
     id: string;
     html: string;
     css?: string;
     js?: string;
 };
-declare type T_InputAppendToTop = {
+type T_InputAppendToTop = {
     id: string;
     html: string;
     css?: string;
     js?: string;
 };
-declare type T_InputAppendToEnd = T_InputAppendToTop;
+type T_InputAppendToEnd = T_InputAppendToTop;
 declare const _default: {
     Update: (data: T_InputUpdate) => Update;
     Remove: (id: string) => Remove;

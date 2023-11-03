@@ -1,19 +1,22 @@
-declare type T_input_update = {
+interface InputUpdate {
     id: string;
     html: string;
     css?: string;
-};
-declare type T_input_append_to_top = {
+    js?: string;
+}
+interface InputAppendToTop {
     id: string;
     html: string;
     css?: string;
-};
-declare type T_input_append_to_end = T_input_append_to_top;
+    js?: string;
+}
+interface InputAppendToEnd extends InputAppendToTop {
+}
 declare const _default: {
-    Update: (data: T_input_update) => Update;
+    Update: (data: InputUpdate) => Update;
     Remove: (id: string) => Remove;
-    AppendToTop: (data: T_input_append_to_top) => AppendToTop;
-    AppendToEnd: (data: T_input_append_to_end) => AppendToEnd;
+    AppendToTop: (data: InputAppendToTop) => AppendToTop;
+    AppendToEnd: (data: InputAppendToEnd) => AppendToEnd;
 };
 export default _default;
 declare class Command {
@@ -21,6 +24,7 @@ declare class Command {
     private id;
     private html;
     private css;
+    private js;
     /**
      * Command
      * @param {string} ev - 'update' | 'remove' | 'append_to_top' | 'append_to_end'
@@ -30,6 +34,7 @@ declare class Command {
         id?: string;
         html?: string;
         css?: string;
+        js?: string;
     });
     toJSON(): {
         v: string;
@@ -38,6 +43,7 @@ declare class Command {
             id: string;
             html: string;
             css?: string | undefined;
+            js: string;
         };
     };
 }
@@ -46,7 +52,7 @@ declare class Update extends Command {
      * Update
      * @param {string | { id: string, html: string, css?: string }} data
      */
-    constructor(data: T_input_update);
+    constructor(data: InputUpdate);
 }
 declare class Remove extends Command {
     /**
@@ -61,23 +67,19 @@ declare class Append extends Command {
      * @param {string} type - 'append_to_top' | 'append_to_end'
      * @param {{ id: string, html: string; css?: string }} data
      */
-    constructor(type: 'append_to_top' | 'append_to_end', data: {
-        id: string;
-        html: string;
-        css?: string;
-    });
+    constructor(type: 'append_to_top' | 'append_to_end', data: InputAppendToTop | InputAppendToEnd);
 }
 declare class AppendToTop extends Append {
     /**
     * AppendToTop
     * @param {{ id: string, html: string; css?: string }} data
     */
-    constructor(data: T_input_append_to_top);
+    constructor(data: InputAppendToTop);
 }
 declare class AppendToEnd extends Append {
     /**
     * AppendToEnd
     * @param {{ id: string, html: string; css?: string }} data
     */
-    constructor(data: T_input_append_to_end);
+    constructor(data: InputAppendToEnd);
 }

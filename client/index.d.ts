@@ -1,14 +1,18 @@
-import { I_life_hooks, I_class_form_data } from './src/interface';
+import { ILifeHooks } from './src/type';
+import HttpError from './src/HttpError';
+export interface ITurboHtmlOptions {
+    root?: Document | HTMLElement;
+    onStartRequest?: ILifeHooks['onStartRequest'];
+    onError?: ILifeHooks['onError'];
+    onEndRequest?: ILifeHooks['onEndRequest'];
+    onLongRequest?: ILifeHooks['onLongRequest'];
+    requestTimeout?: number;
+}
 export default class TurboHtml {
-    private _manager;
-    private _observer;
-    constructor(options?: {
-        root?: Document | HTMLElement;
-        onError?(err: Error | any): void;
-        longRequest?: I_life_hooks['longRequest'];
-        requestTimeout?: number;
-        __FormData?: I_class_form_data;
-    });
+    private readonly _manager;
+    private readonly _observer;
+    static HttpError: typeof HttpError;
+    constructor(options?: ITurboHtmlOptions);
     exec($el: HTMLElement, name: string): void;
     stop(): void;
 }

@@ -1,13 +1,12 @@
 import { Axios } from 'axios';
-import { I_life_hooks, I_class_form_data } from './interface';
+import { ILifeHooks } from './type';
 export default class Manager {
-    protected life_hooks: I_life_hooks;
-    private axios;
-    private _FormData;
+    protected readonly lifeHooks: ILifeHooks;
+    private readonly axios;
     private _list;
     static get_selector(): string;
     static extract_els(node?: HTMLElement | Document): HTMLElement[];
-    constructor(life_hooks: I_life_hooks, axios: Axios, _FormData: I_class_form_data);
+    constructor(lifeHooks: ILifeHooks, axios: Axios);
     start(node: HTMLElement | Document): this;
     append($els: HTMLElement[]): void;
     bindings_new_cmds($el: HTMLElement): void;
