@@ -40,6 +40,11 @@ test:
 make_badge: test
 	npx coverage-badges;
 
+ci:
+	rm -rf example;
+	make build_client;
+	make build_cmd;
+
 # ===== end =====
 
 
