@@ -5,6 +5,7 @@ publish:
 build_client:
 	NODE_ENV=prod npx webpack -c wp.config.js
 	rm -rf client/test;
+	rm -rf client/example;
 
 ts_check_client:
 	npx tsc -p tsconfig.json --noEmit

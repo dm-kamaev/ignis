@@ -1,8 +1,8 @@
-// from source
-import TurboHtml from '@ignis-web/turbo-html/core';
 
-// from build
-// import TurboHtml from '@ignis-web/turbo-html/client';
+// FROM SOURCE
+// import TurboHtml from '@ignis-web/turbo-html/core';
+// FROM BUILD
+import TurboHtml from '@ignis-web/turbo-html/client';
 
 
 const turboHtml = new TurboHtml({
