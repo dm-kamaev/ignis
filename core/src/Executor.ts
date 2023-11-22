@@ -6,6 +6,7 @@ import morphdom from 'morphdom';
 import { getById, addToHead, getTarget, logger } from './helperForBrowser';
 // import unescape from './util/unescape';
 
+import LifeHookManager from './LifeHookManager';
 import ManagerLongRequest from './ManagerLongRequest';
 import Animation from './Animation';
 import { ILifeHooks, ICmd } from './type';
@@ -24,10 +25,12 @@ window.addEventListener('popstate', function(ev) {
 
 const animation = new Animation();
 
+
 export default class Executor {
   private readonly $el: HTMLElement;
+  private _lifeHookManager: LifeHookManager;
 
-  constructor(private readonly _lifeHooks: ILifeHooks, private readonly el: El, private readonly _axios: Axios) {
+  constructor(private readonly _globaLifeHooks: ILifeHooks, private readonly el: El, private readonly _axios: Axios) {
     this.$el = el.$el;
   }
 
@@ -110,14 +113,6 @@ export default class Executor {
       this._make_request(req, $el, cmd, spinner, origin_url);
   }
 
-  private getLifeHookFromAttribute(expr: string | null) {
-    if (!expr) {
-      return;
-    }
-    const code = `with(this){${`return ${expr}`}}`;
-    const fn = new Function(code).bind(this.$el);
-    return fn;
-  }
 
   private _run(cmd: ICmd, { spinner }: { spinner: boolean }) {
     const axios = this._axios;
@@ -175,11 +170,11 @@ export default class Executor {
   }
 
   private _make_request(req: Promise<AxiosResponse>, $el: HTMLElement, cmd: ICmd, spinner: boolean, url: string) {
-    const manager_long_request = spinner ? new ManagerLongRequest(this._lifeHooks.onLongRequest, $el).start() : { end: () => {} };
-    this._lifeHooks.onStartRequest($el, cmd);
+    const manager_long_request = spinner ? new ManagerLongRequest(this._globaLifeHooks.onLongRequest, $el).start() : { end: () => {} };
+    this._lifeHookManager.callOnStartRequest(cmd);
     req
       .then((resp: AxiosResponse) => {
-        this._lifeHooks.onEndRequest($el, cmd);
+        this._lifeHookManager.callOnEndRequest(cmd);
         return this._handle_response(resp, url);
       })
       .catch((err) => this._handlerError(err, cmd))
@@ -227,36 +222,21 @@ export default class Executor {
 
   private _handlerError(err: AxiosError, cmd: ICmd) {
     const error = err.name === 'AxiosError' ? new HttpError(err) : err;
-    this._lifeHooks.onError(error, this.$el);
-    this._lifeHooks.onEndRequest(this.$el, cmd, error);
+    this._lifeHookManager.callOnError(error);
+    this._lifeHookManager.callOnEndRequest(cmd, error);
     return error;
   }
 
   private _exec(cb: () => void) {
     try {
-      this._setLifeHooks();
+      // this._setLifeHooks();
+      this._lifeHookManager = new LifeHookManager(this._globaLifeHooks, this.$el);
       cb();
     } catch (err) {
-      this._lifeHooks.onError(err, this.$el);
+      this._globaLifeHooks.onError(err, this.$el);
     }
   }
 
-  private _setLifeHooks() {
-    const $el = this.$el;
-    const onStartRequest = this.getLifeHookFromAttribute($el.getAttribute(enumAttr.hook['on-start-request']));
-    const onError = this.getLifeHookFromAttribute($el.getAttribute(enumAttr.hook['on-error']));
-    const onEndRequest = this.getLifeHookFromAttribute($el.getAttribute(enumAttr.hook['on-end-request']));
-
-    if (onStartRequest) {
-      this._lifeHooks.onStartRequest = onStartRequest;
-    }
-    if (onError) {
-      this._lifeHooks.onError = onError;
-    }
-    if (onEndRequest) {
-      this._lifeHooks.onEndRequest = onEndRequest;
-    }
-  }
 
   private _apply_response(
     resp: { ev: 'update', data: { id?: string; html: string, css?: string; js?: string } } |

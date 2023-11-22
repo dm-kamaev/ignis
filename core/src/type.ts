@@ -12,9 +12,9 @@ export interface ICmd {
 };
 
 export interface ILifeHooks {
-  onStartRequest($el: HTMLElement, cmd: ICmd): void;
-  onError(err: Error | any, $el: HTMLElement): void;
-  onEndRequest($el: HTMLElement, cmd: ICmd, err?: Error | any): void;
+  onStartRequest($el: HTMLElement, cmd: ICmd): void | Promise<void>;
+  onError(err: Error | any, $el: HTMLElement): void | Promise<void>;
+  onEndRequest($el: HTMLElement, cmd: ICmd, err?: Error | any): void | Promise<void>;
   onLongRequest: { start($el: HTMLElement): void; end($el: HTMLElement): void; };
 };
 

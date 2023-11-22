@@ -1,5 +1,6 @@
 import TurboHtml, { ITurboHtmlOptions } from '../../index';
 
+
 export default function ({ root, onLongRequest, onStartRequest, onError, onEndRequest }: ITurboHtmlOptions = {}) {
   if (global.address) {
     Object.defineProperty(document, 'baseURI', {
