@@ -215,8 +215,9 @@ export default class Executor {
     }
 
     // push url if has attribute
-    if (this.el.$el.hasAttribute(enumAttr['push-url'])) {
-      history.pushState({ v:'turbo-html:1', url }, '', url);
+    if (headers['x-i-push-url'] || this.el.$el.hasAttribute(enumAttr['push-url'])) {
+      const newUrl = headers['x-i-push-url'] || url;
+      history.pushState({ v:'turbo-html:1', url: newUrl }, '', newUrl);
     }
   }
 
