@@ -18,3 +18,12 @@ export interface ILifeHooks {
   onLongRequest: { start($el: HTMLElement): void; end($el: HTMLElement): void; };
 };
 
+export interface ITurboHtmlOptions {
+  root?: Document | HTMLElement;
+  onStartRequest?: ILifeHooks['onStartRequest'];
+  onError?: ILifeHooks['onError'];
+  onEndRequest?: ILifeHooks['onEndRequest'];
+  onLongRequest?: ILifeHooks['onLongRequest'];
+  requestTimeout?: number;
+  headers?: Record<string, number | string>;
+}

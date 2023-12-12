@@ -9,7 +9,7 @@ import { getById, addToHead, getTarget, logger } from './helperForBrowser';
 import LifeHookManager from './LifeHookManager';
 import ManagerLongRequest from './ManagerLongRequest';
 import Animation from './Animation';
-import { ILifeHooks, ICmd } from './type';
+import { ILifeHooks, ICmd, ITurboHtmlOptions } from './type';
 import enumAttr from './enumAttr';
 import type El from './El';
 import Url from './Url';
@@ -30,7 +30,7 @@ export default class Executor {
   private readonly $el: HTMLElement;
   private _lifeHookManager: LifeHookManager;
 
-  constructor(private readonly _globaLifeHooks: ILifeHooks, private readonly el: El, private readonly _axios: Axios) {
+  constructor(private readonly _globaLifeHooks: ILifeHooks, private _globalHeaders: ITurboHtmlOptions['headers'], private readonly el: El, private readonly _axios: Axios) {
     this.$el = el.$el;
   }
 
@@ -88,7 +88,8 @@ export default class Executor {
 
       let req;
       const method_name = method.toLowerCase();
-      const headers = this._build_headers({ id, output_id, request_id: this.el.set_request_id(), });
+      const stringHeadersOfEl = $el.getAttribute('data-i-headers');
+      const headers = this._build_headers({ id, output_id, request_id: this.el.set_request_id(), }, stringHeadersOfEl);
 
       if (method === 'GET' || method === 'DELETE') {
         const json = new FormToJSON($form).parse();
@@ -130,7 +131,8 @@ export default class Executor {
     }
 
     const method_name = method.toLowerCase();
-    const headers = this._build_headers({ id, output_id, request_id: this.el.set_request_id(), });
+    const stringHeadersOfEl = $el.getAttribute('data-i-headers');
+    const headers = this._build_headers({ id, output_id, request_id: this.el.set_request_id(), }, stringHeadersOfEl);
 
     let req;
     const json = this._extract_data($el, cmd.name);
@@ -230,7 +232,6 @@ export default class Executor {
 
   private _exec(cb: () => void) {
     try {
-      // this._setLifeHooks();
       this._lifeHookManager = new LifeHookManager(this._globaLifeHooks, this.$el);
       cb();
     } catch (err) {
@@ -319,13 +320,21 @@ export default class Executor {
     return id;
   }
 
-  private _build_headers({ id, output_id, request_id }: { id: string, output_id: string | null, request_id: string }) {
-    return {
+  private _build_headers({ id, output_id, request_id }: { id: string, output_id: string | null, request_id: string }, stringHeadersOfEl: string | null) {
+    let localHeaders: ITurboHtmlOptions['headers'];
+    if (stringHeadersOfEl) {
+      try {
+        localHeaders = JSON.parse(stringHeadersOfEl);
+      } catch (err) {
+        throw new Error('[turbo-html]: Invalid json - ' + stringHeadersOfEl);
+      }
+    }
+    return Object.assign({}, this._globalHeaders, localHeaders, {
       'X-I-Request': 'true',
       'X-I-Id': id,
       'X-I-Output-Id': output_id,
       'X-I-Request-Id': request_id,
-    };
+    });
   }
 
 }

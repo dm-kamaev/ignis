@@ -5,18 +5,11 @@ import axios from 'axios';
 
 import Manager from './src/Manager';
 import enumAttr from './src/enumAttr';
-import { ILifeHooks } from './src/type';
+import { ILifeHooks, ITurboHtmlOptions } from './src/type';
 import { debounce } from './src/helperForBrowser';
 import HttpError from './src/HttpError';
 
-export interface ITurboHtmlOptions {
-  root?: Document | HTMLElement;
-  onStartRequest?: ILifeHooks['onStartRequest'];
-  onError?: ILifeHooks['onError'];
-  onEndRequest?: ILifeHooks['onEndRequest'];
-  onLongRequest?: ILifeHooks['onLongRequest'];
-  requestTimeout?: number
-}
+export { ITurboHtmlOptions } from './src/type';
 
 export default class TurboHtml {
   private readonly _manager: Manager;
@@ -47,7 +40,7 @@ export default class TurboHtml {
       // },
     });
 
-    const manager = this._manager = new Manager(lifeHooks, req).start(options.root);
+    const manager = this._manager = new Manager(lifeHooks, options.headers, req).start(options.root);
     // start garbage collector
     document.addEventListener('turbo-html:garbage_collector', debounce(() => {
       manager.garbage_collector();

@@ -2,7 +2,6 @@ import nock from 'nock';
 import before_start from '../lib/before_start';
 import timeout from '../lib/timeout';
 import HttpError from '../../src/HttpError';
-import LifeHookManager from '../../src/LifeHookManager';
 
 
 describe('[lifeHooks]', function () {

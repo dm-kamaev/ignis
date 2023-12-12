@@ -1,5 +1,5 @@
 import { Axios } from 'axios';
-import { ILifeHooks, ICmd } from './type';
+import { ILifeHooks, ITurboHtmlOptions, ICmd } from './type';
 import { Once, Debounce, Changed } from './modificator';
 
 import Executor from './Executor';
@@ -32,7 +32,11 @@ export default class Manager {
     return Array.from(node.querySelectorAll(Manager.get_selector()));
   }
 
-  constructor(protected readonly lifeHooks: ILifeHooks, private readonly axios: Axios) {}
+  constructor(
+    protected readonly lifeHooks: ILifeHooks,
+    private readonly _globalHeaders: ITurboHtmlOptions['headers'],
+    private readonly axios: Axios
+  ) {}
 
   start(node: HTMLElement | Document) {
     const $els = Manager.extract_els(node);
@@ -106,7 +110,7 @@ export default class Manager {
 
   private _bind_cmd(el: El, { name, custom_ev, alias_ev }: ICmd) {
     // console.log($el, { name, method, url, cb });
-    const executor = new Executor(this.lifeHooks, el, this.axios);
+    const executor = new Executor(this.lifeHooks, this._globalHeaders, el, this.axios);
     const strategy = new StrategyHandle(el, name, executor, this._get_ev_by_name.bind(this));
     if (custom_ev) {
       strategy.custom_ev(custom_ev);

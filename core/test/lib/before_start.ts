@@ -1,7 +1,7 @@
 import TurboHtml, { ITurboHtmlOptions } from '../../index';
 
 
-export default function ({ root, onLongRequest, onStartRequest, onError, onEndRequest }: ITurboHtmlOptions = {}) {
+export default function ({ root, onLongRequest, onStartRequest, onError, onEndRequest, headers }: ITurboHtmlOptions = {}) {
   if (global.address) {
     Object.defineProperty(document, 'baseURI', {
       value: global.address
@@ -10,6 +10,7 @@ export default function ({ root, onLongRequest, onStartRequest, onError, onEndRe
 
   const turboHtml = new TurboHtml({
     root,
+    headers,
     onStartRequest,
     onError: onError || function (err) {
       console.log('Request error', err, JSON.stringify(err));
